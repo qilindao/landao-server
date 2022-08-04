@@ -16,6 +16,7 @@ class CreateSysManageRoleTable extends Migration
         Schema::create('sys_manage_role', function (Blueprint $table) {
             $table->increments('role_id')->comment('管理员角色主键id');
             $table->string('role_name', 50)->default('')->comment('角色名称');
+            $table->unsignedTinyInteger('role_status')->default(1)->comment('角色状态[0:禁用;1:启用]');
             $table->unsignedTinyInteger('is_default')->default(0)->comment('是否默认角色[1 是 0 否]');
             $table->string('role_desc', 512)->default('')->comment('角色描述');
             $table->unsignedInteger('created_at')->default(0)->comment('创建时间');

@@ -156,4 +156,26 @@ class Role extends Controller
         return ResultHelper::returnFormat('网络繁忙，请稍后再试...', ResponseCode::ERROR);
     }
 
+    /**
+     * 快捷修改指定表字段值
+     * @param Request $request
+     * @param  IRole $roleRepo
+     * @return array|mixed
+     */
+    public function modifyFiled(Request $request, IRole $roleRepo)
+    {
+        $id = intval($request->post('role_id'));
+        if ($id <= 0) {
+            return ResultHelper::returnFormat('缺少必要的参数', ResponseCode::ERROR);
+        }
+        $fieldName = (string)$request->post('field_name');
+        $fieldValue = $request->post('field_value');
+        $ret = $roleRepo->doUpdateFieldByPkId($id, $fieldName, $fieldValue);
+        if ($ret) {
+            return ResultHelper::returnFormat('修改成功', ResponseCode::SUCCESS);
+        }
+        return ResultHelper::returnFormat('服务器繁忙，请稍后再试', ResponseCode::ERROR);
+    }
+
+
 }

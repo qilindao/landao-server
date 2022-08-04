@@ -43,6 +43,7 @@ class RoleModel extends Model
     protected $fillable = [
         'role_id',
         'role_name',
+        'role_status',
         'is_default',
         'role_desc',
         'created_at',
@@ -50,6 +51,8 @@ class RoleModel extends Model
     ];
 
     protected $casts = [
+        'role_status' => 'boolean',
+        'is_default' => 'boolean',
         'created_at' => 'datetime:Y-m-d H:i:s',
         'updated_at' => 'datetime:Y-m-d H:i:s',
     ];
