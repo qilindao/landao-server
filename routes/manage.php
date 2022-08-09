@@ -45,11 +45,11 @@ Route::group([
             $router->put('/dept/update/{id}', 'Dept@update')->name('manage.dept.update');//更新用户
             $router->delete('/dept/delete/{id}', 'Dept@destroy')->name('manage.dept.destroy');//删除
             //后台用户
-            $router->get('/manage', 'Manage@index')->name('manage.user.index');//用户列表
-            $router->get('/manage/read/{id}', 'Manage@read')->name('manage.user.read');//详情
-            $router->post('/manage/store', 'Manage@store')->name('manage.user.store');//新增用户
-            $router->put('/manage/update/{id}', 'Manage@update')->name('manage.user.update');//更新用户
-            $router->delete('/manage/delete/{id}', 'Manage@destroy')->name('manage.user.destroy');//删除
+            $router->get('/account', 'Manage@index')->name('manage.account.index');//用户列表
+            $router->get('/account/read/{id}', 'Manage@read')->name('manage.account.read');//详情
+            $router->post('/account/store', 'Manage@store')->name('manage.account.store');//新增用户
+            $router->put('/account/update/{id}', 'Manage@update')->name('manage.account.update');//更新用户
+            $router->delete('/account/delete/{id}', 'Manage@destroy')->name('manage.account.destroy');//删除
             //请求日志
             $router->get('/log', 'Log@index')->name('manage.log.index');//请求日志
             $router->delete('/log/delete/{id}', 'Log@destroy')->name('manage.log.destroy');//删除

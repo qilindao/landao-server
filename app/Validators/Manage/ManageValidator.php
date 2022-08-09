@@ -21,6 +21,7 @@ class ManageValidator extends AbstractValidator
         'realname' => 'required|max:30',
         'phone' => 'mobile|max:11',
         'introduce' => 'max:500',
+        'manage_status'=>'required|in:0,1'
     ];
 
     protected $messages = [
@@ -32,5 +33,7 @@ class ManageValidator extends AbstractValidator
         'phone.mobile' => '请输入11位手机号',
         'phone.max' => '手机号字数超过了限制',
         'introduce.max' => '简介字数超过了限制',
+        'manage_status.required' => '缺少账号状态',
+        'manage_status.in' => '状态值存在非法值',
     ];
 }

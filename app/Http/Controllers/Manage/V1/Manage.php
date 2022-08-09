@@ -9,10 +9,10 @@ use App\Http\ResponseCode;
 use App\Services\Enums\Common\YesOrNoEnum;
 use App\Services\Repositories\Manage\Interfaces\IManage;
 use App\Support\HashIdsSup;
-use App\Support\Password;
 use App\Validators\Manage\ManageValidator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use JoyceZ\LaravelLib\Aop\AopPassword;
 use JoyceZ\LaravelLib\Helpers\FiltersHelper;
 use JoyceZ\LaravelLib\Helpers\ResultHelper;
 use JoyceZ\LaravelLib\Helpers\StrHelper;
@@ -93,7 +93,7 @@ class Manage extends Controller
             'nickname' => FiltersHelper::filterXSS(trim($params['nickname'])),
             'dept_id' => intval($params['dept_id']),
             'pwd_salt' => $salt,
-            'password' => (new Password())->withSalt((string)config('laraveladmin.passport.password_salt'))->encrypt('123qwe@ASD', $salt),
+            'password' => (new AopPassword())->withSalt()->encrypt('123qwe@ASD', $salt),
             'is_super' => YesOrNoEnum::COMMON_NO,
             'reg_ip' => StrHelper::ip2long(),
             'manage_status' => intval($params['manage_status']),
