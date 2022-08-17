@@ -42,7 +42,7 @@ class Passport extends Controller
         $captchaUniqid = Arr::get($captcha, 'uniq', '');
         return ResultHelper::returnFormat('success', ResponseCode::SUCCESS, [
             'captcha' => $captchaImg,
-            config('laraveladmin.passport.check_captcha_cache_key') => $captchaUniqid
+            config('landao.passport.check_captcha_cache_key') => $captchaUniqid
         ]);
     }
 
@@ -63,7 +63,7 @@ class Passport extends Controller
             return ResultHelper::returnFormat($error->first(), ResponseCode::ERROR);
         }
         //图形验证码校验
-       $captchaUniq = $params[config('laraveladmin.passport.check_captcha_cache_key')];
+       $captchaUniq = $params[config('landao.passport.check_captcha_cache_key')];
        if (!$captchaRepo->check($params['captcha'], $captchaUniq)) {
            return ResultHelper::returnFormat('验证码错误', ResponseCode::ERROR);
        }
@@ -77,7 +77,7 @@ class Passport extends Controller
         //密码验证
         $pwdFlag = (new AopPassword())
             ->withSalt()
-            ->check($manageInfo['password'], (string)$password, $manageInfo['pwd_salt']);
+            ->check($manageInfo['password'], (string)$password, (string)$manageInfo['pwd_salt']);
         if (!$pwdFlag) {
             return ResultHelper::returnFormat('账号密码错误', ResponseCode::ERROR);
         }

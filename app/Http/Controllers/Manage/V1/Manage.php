@@ -82,7 +82,7 @@ class Manage extends Controller
         }
         $username = FiltersHelper::filterXSS(trim($params['username']));
         //查看是否重名
-        $manage = $manageRepo->first(['username' => $username], ['manage_id']);
+        $manage = $manageRepo->where(['username' => $username])->first(['manage_id']);
         if ($manage) {
             return ResultHelper::returnFormat('【' . $username . '】用户名已被使用', ResponseCode::ERROR);
         }
@@ -100,7 +100,7 @@ class Manage extends Controller
             'phone' => FiltersHelper::filterXSS(trim($params['phone'])),
             'introduce' => FiltersHelper::filterXSS(trim($params['introduce']))
         ];
-        $manage = $manageRepo->doCreate($data);
+        $manage = $manageRepo->create($data);
         if ($manage) {
             if ($params['roles']) {
                 //对数据进行解密
@@ -134,7 +134,7 @@ class Manage extends Controller
         }
         $username = FiltersHelper::filterXSS(trim($params['username']));
         //查看是否重名
-        $manageUser = $manageRepo->first([['username', '=', $username], ['manage_id', '<>', $manageId]], ['manage_id']);
+        $manageUser = $manageRepo->where([['username', '=', $username], ['manage_id', '<>', $manageId]])->first(['manage_id']);
         if ($manageUser) {
             return ResultHelper::returnFormat('【' . $username . '】用户名已被使用', ResponseCode::ERROR);
         }

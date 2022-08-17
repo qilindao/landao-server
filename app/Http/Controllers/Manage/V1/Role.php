@@ -48,7 +48,7 @@ class Role extends Controller
      */
     public function lists(IRole $roleRepo)
     {
-        $lists = $roleRepo->all([], ['role_id', 'role_name']);
+        $lists = $roleRepo->all(['role_id', 'role_name']);
         return ResultHelper::returnFormat('success', ResponseCode::SUCCESS,$roleRepo->parseDataRows($lists->toArray()));
     }
 
@@ -92,7 +92,7 @@ class Role extends Controller
             'role_name' => FiltersHelper::filterXSS(trim($params['role_name'])),
             'role_desc' => FiltersHelper::filterXSS(trim($params['role_desc'])),
         ];
-        $role = $roleRepo->doCreate($data);
+        $role = $roleRepo->create($data);
         if ($role) {
             if ($params['menus']) {
                 //对数据进行解密
@@ -170,7 +170,7 @@ class Role extends Controller
         }
         $fieldName = (string)$request->post('field_name');
         $fieldValue = $request->post('field_value');
-        $ret = $roleRepo->doUpdateFieldByPkId($id, $fieldName, $fieldValue);
+        $ret = $roleRepo->updateFieldById($id, $fieldName, $fieldValue);
         if ($ret) {
             return ResultHelper::returnFormat('修改成功', ResponseCode::SUCCESS);
         }

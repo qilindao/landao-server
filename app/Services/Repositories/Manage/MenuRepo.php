@@ -22,10 +22,11 @@ use JoyceZ\LaravelLib\Repositories\BaseRepository;
  */
 class MenuRepo extends BaseRepository implements IMenu
 {
-    public function __construct(MenuModel $model)
+    public function model()
     {
-        parent::__construct($model);
+        return MenuModel::class;
     }
+
 
     /**
      * 解析菜单数据
@@ -139,8 +140,8 @@ class MenuRepo extends BaseRepository implements IMenu
                 continue;
             }
         }
-        $menuGroup=TreeHelper::listToTree($menus,0,'menuId','parentId');
-        return compact('menus', 'power','menuGroup');
+        $menuGroup = TreeHelper::listToTree($menus, 0, 'menuId', 'parentId');
+        return compact('menus', 'power', 'menuGroup');
     }
 
 }

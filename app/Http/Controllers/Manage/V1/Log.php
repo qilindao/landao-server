@@ -52,6 +52,12 @@ class Log extends Controller
         return ResultHelper::returnFormat('网络繁忙，请稍后再试...', ResponseCode::ERROR);
     }
 
+    /**
+     * 批量删除
+     * @param Request $request
+     * @param IManageLog $logRepo
+     * @return array
+     */
     public function batchDel(Request $request,IManageLog $logRepo){
         if (!$request->all()) {
             return ResultHelper::returnFormat('日志不存在',ResponseCode::ERROR);

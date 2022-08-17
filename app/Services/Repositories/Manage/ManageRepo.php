@@ -21,9 +21,9 @@ use JoyceZ\LaravelLib\Repositories\BaseRepository;
  */
 class ManageRepo extends BaseRepository implements IManage
 {
-    public function __construct(ManageModel $model)
+    public function model()
     {
-        parent::__construct($model);
+        return ManageModel::class;
     }
 
     /**
@@ -68,7 +68,7 @@ class ManageRepo extends BaseRepository implements IManage
             }
         })->with('department', 'roles')
             ->orderBy($orderBy, $sort)
-            ->paginate(isset($params['page_size']) ? $params['page_size'] : config('laraveladmin.paginate.page_size'));
+            ->paginate(isset($params['page_size']) ? $params['page_size'] : config('landao.paginate.page_size'));
         return $lists->toArray();
     }
 

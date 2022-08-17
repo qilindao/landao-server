@@ -20,10 +20,12 @@ use JoyceZ\LaravelLib\Repositories\BaseRepository;
  */
 class DepartmentRepo extends BaseRepository implements IDepartment
 {
-    public function __construct(DepartmentModel $model)
+
+    public function model()
     {
-        parent::__construct($model);
+        return DepartmentModel::class;
     }
+
 
     /**
      * 解析菜单数据

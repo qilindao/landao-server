@@ -72,7 +72,7 @@ class Dept extends Controller
             'dept_order' => intval($params['dept_order']),
             'parent_id' => (int)$params['parent_id']
         ];
-        $dept = $departmentRepo->doCreate($data);
+        $dept = $departmentRepo->create($data);
         if ($dept) {
             return ResultHelper::returnFormat('新建成功', ResponseCode::SUCCESS);
         }

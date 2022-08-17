@@ -77,7 +77,7 @@ class Menu extends Controller
             return ResultHelper::returnFormat($error->first(), ResponseCode::ERROR);
         }
         $params['parent_id'] = trim((string)$params['parent_id']) == '' ? 0 : $params['parent_id'];
-        if ($menuRepo->doCreate($params)) {
+        if ($menuRepo->create($params)) {
             return ResultHelper::returnFormat('新增成功');
         }
         return ResultHelper::returnFormat('网络繁忙，请稍后再试...', ResponseCode::ERROR);
@@ -99,7 +99,7 @@ class Menu extends Controller
         if ($error->count() > 0) {
             return ResultHelper::returnFormat($error->first(), ResponseCode::ERROR);
         }
-        if ($menuRepo->doUpdateByPkId($params, $menuId)) {
+        if ($menuRepo->updateById($params, $menuId)) {
             return ResultHelper::returnFormat('修改成功');
         }
         return ResultHelper::returnFormat('网络繁忙，请稍后再试...', ResponseCode::ERROR);

@@ -17,9 +17,9 @@ use JoyceZ\LaravelLib\Repositories\BaseRepository;
  */
 class RoleRepo extends BaseRepository implements IRole
 {
-    public function __construct(RoleModel $model)
+    public function model()
     {
-        parent::__construct($model);
+        return RoleModel::class;
     }
 
     /**
@@ -47,7 +47,7 @@ class RoleRepo extends BaseRepository implements IRole
             }
         })
             ->orderBy($orderBy, $sort)
-            ->paginate(isset($params['page_size']) ? $params['page_size'] : config('laraveladmin.paginate.page_size'));
+            ->paginate(isset($params['page_size']) ? $params['page_size'] : config('landao.paginate.page_size'));
         return $lists->toArray();
     }
 

@@ -17,10 +17,12 @@ use JoyceZ\LaravelLib\Repositories\BaseRepository;
  */
 class LogRepo extends BaseRepository implements ILog
 {
-    public function __construct(LogModel $model)
+
+    public function model()
     {
-        parent::__construct($model);
+        return LogModel::class;
     }
+
 
     /**
      * 解析数据
@@ -64,7 +66,7 @@ class LogRepo extends BaseRepository implements ILog
             }
         })
             ->orderBy($orderBy, $sort)
-            ->paginate(isset($params['page_size']) ? $params['page_size'] : config('laraveladmin.paginate.page_size'));
+            ->paginate(isset($params['page_size']) ? $params['page_size'] : config('landao.paginate.page_size'));
         return $lists->toArray();
     }
 
