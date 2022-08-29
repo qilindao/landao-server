@@ -152,4 +152,20 @@ class Album extends Controller
         ]);
     }
 
+    /**
+     * 批量删除
+     * @param Request $request
+     * @param AlbumFileRepo $albumFileRepo
+     * @return array
+     */
+    public function deleteFile(Request $request,AlbumFileRepo $albumFileRepo){
+        if (!$request->all()) {
+            return ResultHelper::returnFormat('文件不存在',ResponseCode::ERROR);
+        }
+        if ($albumFileRepo->deleteByIds($request->all())) {
+            return ResultHelper::returnFormat('删除成功');
+        }
+        return ResultHelper::returnFormat('网络繁忙，请稍后再试...', ResponseCode::ERROR);
+    }
+
 }

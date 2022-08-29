@@ -62,6 +62,7 @@ Route::group([
             $router->post('/album/upload', 'Album@upload')->name('mange.album.upload');//上传
             $router->post('/album/modify', 'Album@modifyFiled')->name('manage.album.modifyFiled');//快捷修改
             $router->get('/album/file/page', 'Album@getFilePage')->name('manage.album.filePage');
+            $router->post('/album/file/delete', 'Album@deleteFile')->name('manage.album.deleteFile');//批量删除
 
             //前台用户
 //        $router->get('/member', 'Member@index')->name('manage.member.index');//前台用户列表
