@@ -53,7 +53,16 @@ Route::group([
             //请求日志
             $router->get('/log', 'Log@index')->name('manage.log.index');//请求日志
             $router->delete('/log/delete/{id}', 'Log@destroy')->name('manage.log.destroy');//删除
-            $router->post('/log/delete/batch','Log@batchDel')->name('manage.log.batchDel');//批量删除
+            $router->post('/log/delete/batch', 'Log@batchDel')->name('manage.log.batchDel');//批量删除
+            //附件
+            $router->get('/album/category', 'Album@category')->name('manage.album.category');
+            $router->post('/album/store', 'Album@store')->name('manage.album.store');//新增分类
+            $router->put('/album/update/{id}', 'Album@update')->name('manage.album.update');//新增分类
+            $router->delete('/album/delete/{id}', 'Album@destroy')->name('manage.album.destroy');//删除
+            $router->post('/album/upload', 'Album@upload')->name('mange.album.upload');//上传
+            $router->post('/album/modify', 'Album@modifyFiled')->name('manage.album.modifyFiled');//快捷修改
+            $router->get('/album/file/page', 'Album@getFilePage')->name('manage.album.filePage');
+
             //前台用户
 //        $router->get('/member', 'Member@index')->name('manage.member.index');//前台用户列表
         });
