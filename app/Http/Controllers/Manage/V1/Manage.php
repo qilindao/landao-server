@@ -8,14 +8,13 @@ use App\Http\Controllers\Controller;
 use App\Http\ResponseCode;
 use App\Services\Enums\Common\YesOrNoEnum;
 use App\Services\Repositories\Manage\Interfaces\IManage;
-use App\Support\HashIdsSup;
 use App\Validators\Manage\ManageValidator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use JoyceZ\LaravelLib\Aop\AopPassword;
 use JoyceZ\LaravelLib\Helpers\FiltersHelper;
 use JoyceZ\LaravelLib\Helpers\ResultHelper;
 use JoyceZ\LaravelLib\Helpers\StrHelper;
+use JoyceZ\LaravelLib\Security\AopPassword;
 
 /**
  * 后台用户管理
@@ -104,7 +103,7 @@ class Manage extends Controller
         if ($manage) {
             if ($params['roles']) {
                 //对数据进行解密
-                $ids = (new HashIdsSup())->decodeArray($params['roles']);
+                $ids = $params['roles'];//(new HashIdsSup())->decodeArray($params['roles']);
                 $manage->roles()->sync(array_filter(array_unique($ids)));
             }
             return ResultHelper::returnFormat('新增成功', ResponseCode::SUCCESS);
@@ -148,7 +147,7 @@ class Manage extends Controller
         if ($manage->save()) {
             if ($params['roles']) {
                 //对数据进行解密
-                $ids = (new HashIdsSup())->decodeArray($params['roles']);
+                $ids = $params['roles'];//(new HashIdsSup())->decodeArray($params['roles']);
                 $manage->roles()->sync(array_filter(array_unique($ids)));
             }
             return ResultHelper::returnFormat('更新成功成功', ResponseCode::SUCCESS);

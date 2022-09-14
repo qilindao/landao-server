@@ -7,7 +7,6 @@ namespace App\Http\Controllers\Manage\V1;
 use App\Http\Controllers\Controller;
 use App\Http\ResponseCode;
 use App\Services\Repositories\Manage\Interfaces\IRole;
-use App\Support\HashIdsSup;
 use App\Validators\Manage\RoleValidator;
 use Illuminate\Http\Request;
 use JoyceZ\LaravelLib\Helpers\FiltersHelper;
@@ -69,7 +68,7 @@ class Role extends Controller
             $menuIds[] = $item['menu_id'];
         }
         $roleData = $role->toArray();
-        $roleData['menus'] = $menuIds ? (new HashIdsSup())->encodeArray($menuIds) : [];
+//        $roleData['menus'] = $menuIds ? (new HashIdsSup())->encodeArray($menuIds) : [];
         return ResultHelper::returnFormat('success', ResponseCode::SUCCESS, $roleRepo->parseDataRow($roleData));
     }
 
@@ -96,7 +95,8 @@ class Role extends Controller
         if ($role) {
             if ($params['menus']) {
                 //对数据进行解密
-                $ids = (new HashIdsSup())->decodeArray($params['menus']);
+//                $ids = (new HashIdsSup())->decodeArray($params['menus']);
+                $ids =$params['menus'];
                 $role->menus()->sync(array_filter(array_unique($ids)));
             }
             return ResultHelper::returnFormat('新建成功', ResponseCode::SUCCESS);
@@ -129,7 +129,7 @@ class Role extends Controller
         if ($role->save()) {
             if ($params['menus']) {
                 //对数据进行解密
-                $ids = (new HashIdsSup())->decodeArray($params['menus']);
+                $ids = $params['menus'];//(new HashIdsSup())->decodeArray($params['menus']);
                 $role->menus()->sync(array_filter(array_unique($ids)));
             }
             return ResultHelper::returnFormat('修改成功', ResponseCode::SUCCESS);

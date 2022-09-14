@@ -13,7 +13,6 @@ use App\Validators\Manage\ManageValidator;
 use Illuminate\Http\Request;
 use JoyceZ\LaravelLib\Helpers\FiltersHelper;
 use JoyceZ\LaravelLib\Helpers\ResultHelper;
-use JoyceZ\LaravelLib\Validation\Validator as CustomValidator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 /**

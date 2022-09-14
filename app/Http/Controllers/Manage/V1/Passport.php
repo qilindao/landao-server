@@ -14,9 +14,9 @@ use App\Support\CryptoJsSup;
 use App\Validators\Passport\ManageLoginValidator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
-use JoyceZ\LaravelLib\Aop\AopPassword;
 use JoyceZ\LaravelLib\Contracts\Captcha as CaptchaInterface;
 use JoyceZ\LaravelLib\Helpers\ResultHelper;
+use JoyceZ\LaravelLib\Security\AopPassword;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Exceptions\TokenBlacklistedException;
 use Tymon\JWTAuth\Exceptions\TokenInvalidException;
@@ -50,7 +50,7 @@ class Passport extends Controller
      * 管理员登陆
      * @param Request $request
      * @param ManageLoginValidator $validator
-     * @param Captcha $captchaRepo
+     * @param CaptchaInterface $captchaRepo
      * @param IManage $manageRepo
      * @return array
      */
