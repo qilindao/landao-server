@@ -10,7 +10,7 @@ Route::group([
     $router->get('/passport/captcha', 'Passport@captcha')->name('manage.passport.captcha');
     $router->post('/passport/login', 'Passport@login')->name('manage.passport.login');
     $router->group([
-        'middleware' => ['hashids', 'jwt.role:admin'],
+        'middleware' => ['jwt.role:admin'],
     ], function ($router) {
         $router->put('/passport/refreshToken', 'Passport@refreshToken')->name('manage.passport.refreshToken');//刷新token
         $router->post('/passport/logout', 'Passport@logout')->name('manage.passport.logout');//退出登录
@@ -63,6 +63,13 @@ Route::group([
             $router->post('/album/modify', 'Album@modifyFiled')->name('manage.album.modifyFiled');//快捷修改
             $router->get('/album/file/page', 'Album@getFilePage')->name('manage.album.filePage');
             $router->post('/album/file/delete', 'Album@deleteFile')->name('manage.album.deleteFile');//批量删除
+            //字典
+            $router->get('/dictionary', 'Dictionary@index')->name('manage.dictionary.index');
+            $router->post('/dictionary/store', 'Dictionary@store')->name('manage.dictionary.store');
+            $router->put('/dictionary/update/{id}', 'Dictionary@update')->name('manage.dictionary.update');
+            $router->get('/dictionary/type', 'DictionaryType@index')->name('manage.dictionaryType.index');
+            $router->post('/dictionary/type/store', 'DictionaryType@store')->name('manage.dictionaryType.store');//新增分类
+            $router->put('/dictionary/type/update/{id}', 'DictionaryType@update')->name('manage.dictionaryType.update');//新增分类
 
             //前台用户
 //        $router->get('/member', 'Member@index')->name('manage.member.index');//前台用户列表
