@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Manage\V1;
 
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\System\DictRequest;
 use App\Http\ResponseCode;
 use App\Services\Repositories\System\DictionaryRepo;
-use App\Validators\System\DictRequest;
 use Illuminate\Http\Request;
 use JoyceZ\LaravelLib\Helpers\FiltersHelper;
 use JoyceZ\LaravelLib\Helpers\ResultHelper;

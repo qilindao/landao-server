@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Manage\V1;
 
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Manage\DeptRequest;
 use App\Http\ResponseCode;
 use App\Services\Repositories\Manage\Interfaces\IDepartment;
 use App\Validators\Manage\DeptValidator;
@@ -53,19 +54,14 @@ class Dept extends Controller
 
     /**
      * 新建
-     * @param Request $request
-     * @param DeptValidator $validator
+     * @param DeptRequest $request
      * @param IDepartment $departmentRepo
      * @return array
      */
-    public function store(Request $request, DeptValidator $validator, IDepartment $departmentRepo)
+    public function store(DeptRequest $request, IDepartment $departmentRepo)
     {
         $params = $request->all();
-        //表单校验
-        $error = $validator->make($params)->errors();
-        if ($error->count() > 0) {
-            return ResultHelper::returnFormat($error->first(), ResponseCode::ERROR);
-        }
+
         $data = [
             'dept_name' => FiltersHelper::filterXSS(trim($params['dept_name'])),
             'dept_desc' => FiltersHelper::filterXSS(trim($params['dept_desc'])),
@@ -82,19 +78,13 @@ class Dept extends Controller
     /**
      * 更新
      * @param int $deptId
-     * @param Request $request
-     * @param DeptValidator $validator
+     * @param DeptRequest $request
      * @param IDepartment $departmentRepo
      * @return array
      */
-    public function update(int $deptId, Request $request, DeptValidator $validator, IDepartment $departmentRepo)
+    public function update(int $deptId, DeptRequest $request, IDepartment $departmentRepo)
     {
         $params = $request->all();
-        //表单校验
-        $error = $validator->make($params)->errors();
-        if ($error->count() > 0) {
-            return ResultHelper::returnFormat($error->first(), ResponseCode::ERROR);
-        }
         $dept = $departmentRepo->getByPkId($deptId);
         if (!$dept) {
             return ResultHelper::returnFormat('部门信息不存在', ResponseCode::ERROR);

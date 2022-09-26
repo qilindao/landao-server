@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Manage\V1;
 
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Manage\ManageRequest;
 use App\Http\ResponseCode;
 use App\Services\Enums\Common\YesOrNoEnum;
 use App\Services\Repositories\Manage\Interfaces\IManage;
@@ -66,19 +67,13 @@ class Manage extends Controller
 
     /**
      * 创建管理员
-     * @param Request $request
-     * @param ManageValidator $validator
+     * @param ManageRequest $request
      * @param IManage $manageRepo
      * @return array
      */
-    public function store(Request $request, ManageValidator $validator, IManage $manageRepo)
+    public function store(ManageRequest $request,IManage $manageRepo)
     {
         $params = $request->all();
-        //表单校验
-        $error = $validator->make($params)->errors();
-        if ($error->count() > 0) {
-            return ResultHelper::returnFormat($error->first(), ResponseCode::ERROR);
-        }
         $username = FiltersHelper::filterXSS(trim($params['username']));
         //查看是否重名
         $manage = $manageRepo->where(['username' => $username])->first(['manage_id']);
@@ -114,19 +109,13 @@ class Manage extends Controller
     /**
      * 更新成功
      * @param int $manageId
-     * @param Request $request
-     * @param ManageValidator $validator
+     * @param ManageRequest $request
      * @param IManage $manageRepo
      * @return array
      */
-    public function update(int $manageId, Request $request, ManageValidator $validator, IManage $manageRepo)
+    public function update(int $manageId, ManageRequest $request,IManage $manageRepo)
     {
         $params = $request->all();
-        //表单校验
-        $error = $validator->make($params)->errors();
-        if ($error->count() > 0) {
-            return ResultHelper::returnFormat($error->first(), ResponseCode::ERROR);
-        }
         $manage = $manageRepo->getByPkId($manageId);
         if (!$manage) {
             return ResultHelper::returnFormat('该账号不存在', ResponseCode::ERROR);

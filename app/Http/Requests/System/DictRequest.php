@@ -1,14 +1,16 @@
 <?php
 
-
-namespace App\Validators\System;
-
+namespace App\Http\Requests\System;
 
 use JoyceZ\LaravelLib\Validation\BaseRequest;
 
+/**
+ * 数据字典
+ * Class DictRequest
+ * @package App\Http\Requests\System
+ */
 class DictRequest extends BaseRequest
 {
-
     /**
      *  定义针对 DictTypeController->store( )的验证规则
      * @return array

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Manage\V1;
 
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Manage\RoleRequest;
 use App\Http\ResponseCode;
 use App\Services\Repositories\Manage\Interfaces\IRole;
 use App\Validators\Manage\RoleValidator;
@@ -74,19 +75,14 @@ class Role extends Controller
 
     /**
      * 新建角色
-     * @param Request $request
+     * @param RoleRequest $request
      * @param RoleValidator $validator
      * @param IRole $roleRepo
      * @return array
      */
-    public function store(Request $request, RoleValidator $validator, IRole $roleRepo)
+    public function store(RoleRequest $request, RoleValidator $validator, IRole $roleRepo)
     {
         $params = $request->all();
-        //表单校验
-        $error = $validator->make($params)->errors();
-        if ($error->count() > 0) {
-            return ResultHelper::returnFormat($error->first(), ResponseCode::ERROR);
-        }
         $data = [
             'role_name' => FiltersHelper::filterXSS(trim($params['role_name'])),
             'role_desc' => FiltersHelper::filterXSS(trim($params['role_desc'])),
@@ -107,22 +103,17 @@ class Role extends Controller
     /**
      * 更新角色
      * @param int $roleId
-     * @param Request $request
-     * @param RoleValidator $validator
+     * @param RoleRequest $request
      * @param IRole $roleRepo
      * @return array
      */
-    public function update(int $roleId, Request $request, RoleValidator $validator, IRole $roleRepo)
+    public function update(int $roleId, RoleRequest $request, IRole $roleRepo)
     {
         $params = $request->all();
-        //表单校验
-        $error = $validator->make($params)->errors();
-        if ($error->count() > 0) {
-            return ResultHelper::returnFormat($error->first(), ResponseCode::ERROR);
-        }
+
         $role = $roleRepo->getByPkId($roleId);
         if (!$role) {
-            return ResultHelper::returnFormat($error->first(), ResponseCode::ERROR);
+            return ResultHelper::returnFormat('该角色不存在', ResponseCode::ERROR);
         }
         $role->role_name = FiltersHelper::filterXSS(trim($params['role_name']));
         $role->role_desc = FiltersHelper::filterXSS(trim($params['role_desc']));

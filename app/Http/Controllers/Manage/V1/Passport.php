@@ -8,6 +8,7 @@ namespace App\Http\Controllers\Manage\V1;
 use App\Events\PassportManageLoginAfterEvent;
 use App\Events\PassportManageRefreshTokenEvent;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Passport\ManageLoginRequest;
 use App\Http\ResponseCode;
 use App\Services\Repositories\Manage\Interfaces\IManage;
 use App\Support\CryptoJsSup;
@@ -48,25 +49,20 @@ class Passport extends Controller
 
     /**
      * 管理员登陆
-     * @param Request $request
-     * @param ManageLoginValidator $validator
+     * @param ManageLoginRequest $request
      * @param CaptchaInterface $captchaRepo
      * @param IManage $manageRepo
      * @return array
      */
-    public function login(Request $request, ManageLoginValidator $validator, CaptchaInterface $captchaRepo, IManage $manageRepo)
+    public function login(ManageLoginRequest $request, CaptchaInterface $captchaRepo, IManage $manageRepo)
     {
         $params = $request->all();
-        //表单校验
-        $error = $validator->make($params)->errors();
-        if ($error->count() > 0) {
-            return ResultHelper::returnFormat($error->first(), ResponseCode::ERROR);
-        }
+
         //图形验证码校验
-       $captchaUniq = $params[config('landao.passport.check_captcha_cache_key')];
-       if (!$captchaRepo->check($params['captcha'], $captchaUniq)) {
-           return ResultHelper::returnFormat('验证码错误', ResponseCode::ERROR);
-       }
+        $captchaUniq = $params[config('landao.passport.check_captcha_cache_key')];
+        if (!$captchaRepo->check($params['captcha'], $captchaUniq)) {
+            return ResultHelper::returnFormat('验证码错误', ResponseCode::ERROR);
+        }
         $manage = $manageRepo->getInfoByUsername(trim($params['username']));
         if (!$manage) {
             return ResultHelper::returnFormat('账号不存在', ResponseCode::ERROR);
@@ -149,7 +145,7 @@ class Passport extends Controller
             return ResultHelper::returnFormat('登出成功', ResponseCode::SUCCESS);
         } catch (TokenInvalidException $e) {
             return ResultHelper::returnFormat('token 无效', ResponseCode::LOGIN_TOKEN_TIME_DIE);
-        } catch (TokenBlacklistedException $e){
+        } catch (TokenBlacklistedException $e) {
             return ResultHelper::returnFormat('token 无效', ResponseCode::LOGIN_TOKEN_TIME_DIE);
         }
     }

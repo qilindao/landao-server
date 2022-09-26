@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Manage\V1;
 
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Manage\MenuRequest;
 use App\Http\ResponseCode;
 use App\Services\Repositories\Manage\Interfaces\IMenu;
 use App\Validators\Manage\MenuValidator;
@@ -63,19 +64,13 @@ class Menu extends Controller
 
     /**
      * 新增菜单
-     * @param Request $request
-     * @param MenuValidator $validator
+     * @param MenuRequest $request
      * @param IMenu $menuRepo
      * @return array
      */
-    public function store(Request $request, MenuValidator $validator, IMenu $menuRepo)
+    public function store(MenuRequest $request, IMenu $menuRepo)
     {
         $params = $request->all();
-        //表单校验
-        $error = $validator->make($params)->errors();
-        if ($error->count() > 0) {
-            return ResultHelper::returnFormat($error->first(), ResponseCode::ERROR);
-        }
         $params['parent_id'] = trim((string)$params['parent_id']) == '' ? 0 : $params['parent_id'];
         if ($menuRepo->create($params)) {
             return ResultHelper::returnFormat('新增成功');
@@ -86,19 +81,13 @@ class Menu extends Controller
     /**
      * 修改菜单
      * @param int $menuId 菜单id
-     * @param Request $request
-     * @param MenuValidator $validator
+     * @param MenuRequest $request
      * @param IMenu $menuRepo
      * @return array
      */
-    public function update(int $menuId, Request $request, MenuValidator $validator, IMenu $menuRepo)
+    public function update(int $menuId, MenuRequest $request, IMenu $menuRepo)
     {
         $params = $request->all();
-        //表单校验
-        $error = $validator->make($params)->errors();
-        if ($error->count() > 0) {
-            return ResultHelper::returnFormat($error->first(), ResponseCode::ERROR);
-        }
         if ($menuRepo->updateById($params, $menuId)) {
             return ResultHelper::returnFormat('修改成功');
         }

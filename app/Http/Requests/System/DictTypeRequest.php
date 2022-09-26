@@ -1,18 +1,16 @@
 <?php
 
-
-namespace App\Validators\System;
-
+namespace App\Http\Requests\System;
 
 use JoyceZ\LaravelLib\Validation\BaseRequest;
 
 /**
+ * 数据字典类型
  * Class DictTypeRequest
- * @package App\Validators\System
+ * @package App\Http\Requests\System
  */
 class DictTypeRequest extends BaseRequest
 {
-
     /**
      *  定义针对 DictTypeController->store( )的验证规则
      * @return array
@@ -49,6 +47,4 @@ class DictTypeRequest extends BaseRequest
             'type_key.required' => '请填写标识key',
         ];
     }
-
-
 }

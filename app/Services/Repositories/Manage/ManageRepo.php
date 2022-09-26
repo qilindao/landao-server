@@ -63,7 +63,6 @@ class ManageRepo extends BaseRepository implements IManage
      */
     public function getList(array $params, string $orderBy = 'updated_at', string $sort = 'desc'): array
     {
-        DB::connection()->enableQueryLog();
         $lists = $this->model->where(function ($query) use ($params) {
             if (isset($params['search_text']) && $params['search_text'] != '') {
                 $query->where('realname', 'like', '%' . $params['search_text'] . '%');
