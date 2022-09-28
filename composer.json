@@ -7,7 +7,7 @@
     "require": {
         "php": "^7.3",
         "guzzlehttp/guzzle": "^7.0.1",
-        "joycezhang/laravellib": "^2.0",
+        "joycezhang/laravellib": "^2.1",
         "laravel/framework": "^8.54",
         "laravel/tinker": "^2.5",
         "tymon/jwt-auth": "^1.0",
