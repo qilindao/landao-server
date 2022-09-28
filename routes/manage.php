@@ -9,6 +9,7 @@ Route::group([
 ], function ($router) {
     $router->get('/passport/captcha', 'Passport@captcha')->name('manage.passport.captcha');
     $router->post('/passport/login', 'Passport@login')->name('manage.passport.login');
+    $router->get('/region/build', 'Region@buildLocal')->name('manage.region.buildLocal');//菜单权限列表
     $router->group([
         'middleware' => ['jwt.role:admin'],
     ], function ($router) {
@@ -70,6 +71,12 @@ Route::group([
             $router->get('/dictionary/type', 'DictionaryType@index')->name('manage.dictionaryType.index');
             $router->post('/dictionary/type/store', 'DictionaryType@store')->name('manage.dictionaryType.store');//新增分类
             $router->put('/dictionary/type/update/{id}', 'DictionaryType@update')->name('manage.dictionaryType.update');//新增分类
+
+            //系统配置
+            $router->get('/routine/config', 'Routine\Config@index')->name('manage.routine.config.index');
+            $router->post('/routine/config/update', 'Routine\Config@update')->name('manage.routine.config.update');
+            $router->post('/routine/config/store', 'Routine\Config@store')->name('manage.routine.config.store');
+            $router->delete('/routine/config/delete/{id}', 'Routine\Config@destroy')->name('manage.routine.config.destroy');//删除
 
             //前台用户
 //        $router->get('/member', 'Member@index')->name('manage.member.index');//前台用户列表
