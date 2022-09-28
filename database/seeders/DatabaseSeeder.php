@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             SysManageSeeder::class,
             SysManageMenuSeeder::class,
             SysRegionTableSeeder::class,
+            SysConfigSeeder::class
         ]);
     }
 }
