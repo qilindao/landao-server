@@ -64,8 +64,8 @@ class ManageRepo extends BaseRepository implements IManage
     public function getList(array $params, string $orderBy = 'updated_at', string $sort = 'desc'): array
     {
         $lists = $this->model->where(function ($query) use ($params) {
-            if (isset($params['search_text']) && $params['search_text'] != '') {
-                $query->where('realname', 'like', '%' . $params['search_text'] . '%');
+            if (isset($params['realname']) && $params['realname'] != '') {
+                $query->where('realname', 'like', '%' . $params['realname'] . '%');
             }
             if(isset($params['reg_date']) && is_array($params['reg_date'])){
                 $randTime= array_map(function ($value){
