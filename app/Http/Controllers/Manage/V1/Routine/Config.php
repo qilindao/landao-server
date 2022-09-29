@@ -36,6 +36,7 @@ class Config extends Controller
         if ($isExist) {
             return ResultHelper::returnFormat('变量名已存在', ResponseCode::ERROR);
         }
+        $configRepo->transaction();
         try {
             $config = $configRepo->create($params);
             if ($config) {
@@ -78,6 +79,7 @@ class Config extends Controller
         if (!$updateData) {
             return ResultHelper::returnFormat('没有修改项', ResponseCode::ERROR);
         }
+        $configRepo->transaction();
         try {
             $flag = $configRepo->updateBatch($updateData);
             if ($flag) {
@@ -106,6 +108,7 @@ class Config extends Controller
         if (!$config) {
             return ResultHelper::returnFormat('配置信息不存在', ResponseCode::ERROR);
         }
+        $configRepo->transaction();
         try {
             if ($config->delete()) {
                 $configRepo->commit();
@@ -113,7 +116,7 @@ class Config extends Controller
                 return ResultHelper::returnFormat('删除成功');
             } else {
                 $configRepo->rollBack();
-                return ResultHelper::returnFormat('删除失败', ResponseCode::ERROR);
+                return ResultHelper::returnFormat('修改失败或值未变', ResponseCode::ERROR);
             }
         } catch (QueryException $exception) {
             $configRepo->rollBack();
