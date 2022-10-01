@@ -76,11 +76,10 @@ class Role extends Controller
     /**
      * 新建角色
      * @param RoleRequest $request
-     * @param RoleValidator $validator
      * @param IRole $roleRepo
      * @return array
      */
-    public function store(RoleRequest $request, RoleValidator $validator, IRole $roleRepo)
+    public function store(RoleRequest $request, IRole $roleRepo)
     {
         $params = $request->all();
         $data = [
@@ -138,7 +137,7 @@ class Role extends Controller
     {
         $role = $roleRepo->getByPkId($roleId);
         if (!$role) {
-            return ResultHelper::returnFormat('角色不存在');
+            return ResultHelper::returnFormat('角色不存在',ResponseCode::ERROR);
         }
         if ($role->delete()) {
             $role->menus()->detach($roleId);
