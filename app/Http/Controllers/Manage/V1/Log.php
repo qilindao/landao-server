@@ -4,27 +4,26 @@
 namespace App\Http\Controllers\Manage\V1;
 
 
-use App\Http\Controllers\Controller;
-use App\Http\ResponseCode;
-use App\Services\Repositories\Manage\Interfaces\ILog as IManageLog;
+use App\Http\Controllers\ApiController;
+use App\Services\Repositories\Manage\LogRepo;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
-use JoyceZ\LaravelLib\Helpers\ResultHelper;
 
-class Log extends Controller
+class Log extends ApiController
 {
 
     /**
-     * 后台
+     * 日志列表
      * @param Request $request
-     * @param IManageLog $logRepo
-     * @return array
+     * @param LogRepo $logRepo
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function index(Request $request, IManageLog $logRepo)
+    public function index(Request $request, LogRepo $logRepo)
     {
         $params = $request->all();
         $ret = $logRepo->getList($params, $params['order'] ?? 'created_at', $params['sort'] ?? 'desc');
         $list = $logRepo->parseDataRows($ret['data']);
-        return ResultHelper::returnFormat('success', ResponseCode::SUCCESS, [
+        return $this->success([
             'pagination' => [
                 'total' => $ret['total'],
                 'page_size' => $ret['per_page'],
@@ -37,34 +36,51 @@ class Log extends Controller
     /**
      * 删除
      * @param int $logId
-     * @param IManageLog $logRepo
-     * @return array
+     * @param LogRepo $logRepo
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy(int $logId, IManageLog $logRepo)
+    public function destroy(int $logId, LogRepo $logRepo)
     {
         $log = $logRepo->getByPkId($logId);
         if (!$log) {
-            return ResultHelper::returnFormat('日志不存在',ResponseCode::ERROR);
+            return $this->badSuccessRequest('日志不存在');
         }
-        if ($log->delete()) {
-            return ResultHelper::returnFormat('删除成功');
+        $logRepo->transaction();
+        try {
+            if ($log->delete()) {
+                $logRepo->commit();
+                return $this->successRequest('删除成功');
+            }
+            $logRepo->rollBack();
+            return $this->badSuccessRequest('删除失败');
+        } catch (QueryException $exception) {
+            $logRepo->rollBack();
+            return $this->badSuccessRequest($exception->getMessage());
         }
-        return ResultHelper::returnFormat('网络繁忙，请稍后再试...', ResponseCode::ERROR);
     }
 
     /**
      * 批量删除
      * @param Request $request
-     * @param IManageLog $logRepo
-     * @return array
+     * @param LogRepo $logRepo
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function batchDel(Request $request,IManageLog $logRepo){
+    public function batchDel(Request $request, LogRepo $logRepo)
+    {
         if (!$request->all()) {
-            return ResultHelper::returnFormat('日志不存在',ResponseCode::ERROR);
+            return $this->badSuccessRequest('日志不存在');
         }
-        if ($logRepo->deleteBatchById($request->all())) {
-            return ResultHelper::returnFormat('删除成功');
+        $logRepo->transaction();
+        try {
+            if ($logRepo->deleteBatchById($request->all())) {
+                $logRepo->commit();
+                return $this->successRequest('删除成功');
+            }
+            $logRepo->rollBack();
+            return $this->badSuccessRequest('删除失败');
+        } catch (QueryException $exception) {
+            $logRepo->rollBack();
+            return $this->badSuccessRequest($exception->getMessage());
         }
-        return ResultHelper::returnFormat('网络繁忙，请稍后再试...', ResponseCode::ERROR);
     }
 }

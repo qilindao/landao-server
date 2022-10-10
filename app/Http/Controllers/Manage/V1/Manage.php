@@ -4,16 +4,14 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Manage\V1;
 
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\ApiController;
 use App\Http\Requests\Manage\ManageRequest;
-use App\Http\ResponseCode;
 use App\Services\Enums\Common\YesOrNoEnum;
-use App\Services\Repositories\Manage\Interfaces\IManage;
-use App\Validators\Manage\ManageValidator;
+use App\Services\Repositories\Manage\ManageRepo;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use JoyceZ\LaravelLib\Helpers\FiltersHelper;
-use JoyceZ\LaravelLib\Helpers\ResultHelper;
 use JoyceZ\LaravelLib\Helpers\StrHelper;
 use JoyceZ\LaravelLib\Security\AopPassword;
 
@@ -25,20 +23,19 @@ use JoyceZ\LaravelLib\Security\AopPassword;
  * Class Manage
  * @package App\Http\Controllers\Manage\V1
  */
-class Manage extends Controller
+class Manage extends ApiController
 {
     /**
      * 列表
      * @param Request $request
-     * @param IManage $manageRepo
-     * @return array
+     * @param ManageRepo $manageRepo
      */
-    public function index(Request $request, IManage $manageRepo)
+    public function index(Request $request, ManageRepo $manageRepo)
     {
         $params = $request->all();
         $ret = $manageRepo->getList($params, $params['order'] ?? 'reg_date', $params['sort'] ?? 'desc');
         $list = $manageRepo->parseDataRows($ret['data']);
-        return ResultHelper::returnFormat('success', 200, [
+        return $this->success([
             'pagination' => [
                 'total' => $ret['total'],
                 'page_size' => $ret['per_page'],
@@ -51,34 +48,34 @@ class Manage extends Controller
     /**
      * 用户详情
      * @param int $manageId
-     * @param IManage $manageRepo
-     * @return array
+     * @param ManageRepo $manageRepo
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function read(int $manageId, IManage $manageRepo)
+    public function read(int $manageId, ManageRepo $manageRepo)
     {
         $manage = $manageRepo->getByPkId($manageId);
         if (!$manage) {
-            return ResultHelper::returnFormat('用户不存在', ResponseCode::ERROR);
+            return $this->badSuccessRequest('用户不存在');
         }
         $manage->roles;
         $manage->department;
-        return ResultHelper::returnFormat('success', ResponseCode::SUCCESS, $manageRepo->parseDataRow($manage->toArray()));
+        return $this->success($manageRepo->parseDataRow($manage->toArray()));
     }
 
     /**
      * 创建管理员
      * @param ManageRequest $request
-     * @param IManage $manageRepo
-     * @return array
+     * @param ManageRepo $manageRepo
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function store(ManageRequest $request,IManage $manageRepo)
+    public function store(ManageRequest $request, ManageRepo $manageRepo)
     {
         $params = $request->all();
         $username = FiltersHelper::filterXSS(trim($params['username']));
         //查看是否重名
         $manage = $manageRepo->where(['username' => $username])->first(['manage_id']);
         if ($manage) {
-            return ResultHelper::returnFormat('【' . $username . '】用户名已被使用', ResponseCode::ERROR);
+            return $this->badSuccessRequest('【' . $username . '】用户名已被使用');
         }
         $salt = Str::random(6);
         $data = [
@@ -94,37 +91,46 @@ class Manage extends Controller
             'phone' => FiltersHelper::filterXSS(trim($params['phone'])),
             'introduce' => FiltersHelper::filterXSS(trim($params['introduce']))
         ];
-        $manage = $manageRepo->create($data);
-        if ($manage) {
-            if ($params['roles']) {
-                //对数据进行解密
-                $ids = $params['roles'];//(new HashIdsSup())->decodeArray($params['roles']);
-                $manage->roles()->sync(array_filter(array_unique($ids)));
+
+        $manageRepo->transaction();
+        try {
+            $manage = $manageRepo->create($data);
+            if ($manage) {
+                if ($params['roles']) {
+                    //对数据进行解密
+                    $ids = $params['roles'];//(new HashIdsSup())->decodeArray($params['roles']);
+                    $manage->roles()->sync(array_filter(array_unique($ids)));
+                }
+                $manageRepo->commit();
+                return $this->successRequest('新增成功');
             }
-            return ResultHelper::returnFormat('新增成功', ResponseCode::SUCCESS);
+            $manageRepo->rollBack();
+            return $this->badSuccessRequest('新增失败');
+        } catch (QueryException $exception) {
+            $manageRepo->rollBack();
+            return $this->badSuccessRequest($exception->getMessage());
         }
-        return ResultHelper::returnFormat('网络繁忙，请稍后再试...', ResponseCode::ERROR);
     }
 
     /**
      * 更新成功
      * @param int $manageId
      * @param ManageRequest $request
-     * @param IManage $manageRepo
-     * @return array
+     * @param ManageRepo $manageRepo
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function update(int $manageId, ManageRequest $request,IManage $manageRepo)
+    public function update(int $manageId, ManageRequest $request, ManageRepo $manageRepo)
     {
         $params = $request->all();
         $manage = $manageRepo->getByPkId($manageId);
         if (!$manage) {
-            return ResultHelper::returnFormat('该账号不存在', ResponseCode::ERROR);
+            return $this->badSuccessRequest('该账号不存在');
         }
         $username = FiltersHelper::filterXSS(trim($params['username']));
         //查看是否重名
         $manageUser = $manageRepo->where([['username', '=', $username], ['manage_id', '<>', $manageId]])->first(['manage_id']);
         if ($manageUser) {
-            return ResultHelper::returnFormat('【' . $username . '】用户名已被使用', ResponseCode::ERROR);
+            return $this->badSuccessRequest('【' . $username . '】用户名已被使用');
         }
         $manage->username = $username;
         $manage->realname = FiltersHelper::filterXSS(trim($params['realname']));
@@ -133,34 +139,51 @@ class Manage extends Controller
         $manage->manage_status = intval($params['manage_status']);
         $manage->phone = FiltersHelper::filterXSS(trim($params['phone']));
         $manage->introduce = FiltersHelper::filterXSS(trim($params['introduce']));
-        if ($manage->save()) {
-            if ($params['roles']) {
-                //对数据进行解密
-                $ids = $params['roles'];//(new HashIdsSup())->decodeArray($params['roles']);
-                $manage->roles()->sync(array_filter(array_unique($ids)));
+
+        $manageRepo->transaction();
+        try {
+            if ($manage->save()) {
+                if ($params['roles']) {
+                    //对数据进行解密
+                    $ids = $params['roles'];//(new HashIdsSup())->decodeArray($params['roles']);
+                    $manage->roles()->sync(array_filter(array_unique($ids)));
+                }
+                $manageRepo->commit();
+                return $this->successRequest('更新成功');
             }
-            return ResultHelper::returnFormat('更新成功成功', ResponseCode::SUCCESS);
+            $manageRepo->rollBack();
+            return $this->badSuccessRequest('更新失败');
+        } catch (QueryException $exception) {
+            $manageRepo->rollBack();
+            return $this->badSuccessRequest($exception->getMessage());
         }
-        return ResultHelper::returnFormat('网络繁忙，请稍后再试...', ResponseCode::ERROR);
     }
 
     /**
      * 删除
      * @param int $manageId
-     * @param IManage $manageRepo
-     * @return array
+     * @param ManageRepo $manageRepo
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy(int $manageId, IManage $manageRepo)
+    public function destroy(int $manageId, ManageRepo $manageRepo)
     {
         $manage = $manageRepo->getByPkId($manageId);
         if (!$manage) {
-            return ResultHelper::returnFormat('用户不存在');
+            return $this->badSuccessRequest('用户不存在');
         }
-        if ($manage->delete()) {
-            $manage->roles()->detach($manageId);
-            return ResultHelper::returnFormat('删除成功');
+        $manageRepo->transaction();
+        try {
+            if ($manage->delete()) {
+                $manage->roles()->detach($manageId);
+                $manageRepo->commit();
+                return $this->successRequest('删除成功');
+            }
+            $manageRepo->rollBack();
+            return $this->badSuccessRequest('更新失败');
+        } catch (QueryException $exception) {
+            $manageRepo->rollBack();
+            return $this->badSuccessRequest($exception->getMessage());
         }
-        return ResultHelper::returnFormat('网络繁忙，请稍后再试...', ResponseCode::ERROR);
     }
 
 }

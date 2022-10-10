@@ -4,15 +4,14 @@
 namespace App\Http\Controllers\Manage\V1;
 
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\ApiController;
 use App\Http\Requests\System\DictRequest;
-use App\Http\ResponseCode;
 use App\Services\Repositories\System\DictionaryRepo;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use JoyceZ\LaravelLib\Helpers\FiltersHelper;
-use JoyceZ\LaravelLib\Helpers\ResultHelper;
 
-class Dictionary extends Controller
+class Dictionary extends ApiController
 {
     public function index(Request $request, DictionaryRepo $dictionaryRepo)
     {
@@ -21,7 +20,7 @@ class Dictionary extends Controller
             $query->where('type_id', intval($params['type_id']));
 
         })->paginate(['*'], isset($params['page_size']) ? $params['page_size'] : config('landao.paginate.page_size'))->toArray();
-        return ResultHelper::returnFormat('success', 200, [
+        return $this->success([
             'pagination' => [
                 'total' => $ret['total'],
                 'page_size' => $ret['per_page'],
@@ -40,27 +39,43 @@ class Dictionary extends Controller
             'is_enable' => intval($params['is_enable']),
             'expand' => isset($params['expand']) ? $params['expand'] : []
         ];
-        $dict = $dictRepo->create($data);
-        if ($dict) {
-            return ResultHelper::returnFormat('新增字典成功', ResponseCode::SUCCESS, $dict);
+        $dictRepo->transaction();
+        try {
+            if ($dictRepo->create($data)) {
+                $dictRepo->commit();
+                return $this->successRequest('新增成功');
+            }
+            $dictRepo->rollBack();
+            return $this->badSuccessRequest('新增失败');
+        } catch (QueryException $exception) {
+            $dictRepo->rollBack();
+            return $this->badSuccessRequest($exception->getMessage());
         }
-        return ResultHelper::returnFormat('新增字典失败，稍后再试', ResponseCode::ERROR, $dict);
     }
 
     public function update(int $dictId, DictRequest $request, DictionaryRepo $dictRepo)
     {
         $dict = $dictRepo->getByPkId($dictId);
         if (!$dict) {
-            return ResultHelper::returnFormat('字典不存在', ResponseCode::ERROR);
+            return $this->badSuccessRequest('字典不存在');
         }
         $params = $request->all();
 
         $dict->label = FiltersHelper::stringSpecialHtmlFilter(trim($params['label']));
         $dict->is_enable = $params['is_enable'];
         $dict->expand = isset($params['expand']) ? $params['expand'] : [];
-        if ($dict->save()) {
-            return ResultHelper::returnFormat('更新成功', ResponseCode::SUCCESS, $dict);
+
+        $dictRepo->transaction();
+        try {
+            if ($dict->save()) {
+                $dictRepo->commit();
+                return $this->successRequest('更新成功');
+            }
+            $dictRepo->rollBack();
+            return $this->badSuccessRequest('更新失败');
+        } catch (QueryException $exception) {
+            $dictRepo->rollBack();
+            return $this->badSuccessRequest($exception->getMessage());
         }
-        return ResultHelper::returnFormat('更新失败', ResponseCode::ERROR);
     }
 }

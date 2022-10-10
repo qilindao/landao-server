@@ -4,37 +4,38 @@
 namespace App\Http\Controllers\Manage\V1\Routine;
 
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\ApiController;
 use App\Http\Requests\System\ConfigRequest;
-use App\Http\ResponseCode;
 use App\Services\Enums\System\ConfigTypeEnum;
 use App\Services\Repositories\System\ConfigRepo;
+use App\Services\Repositories\System\RegionRepo;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
-use JoyceZ\LaravelLib\Helpers\ResultHelper;
+use Illuminate\Support\Arr;
 
-class Config extends Controller
+class Config extends ApiController
 {
     public function index(ConfigRepo $configRepo)
     {
         $configGroup = $configRepo->getConfigValueByName('config_group');
         $configType = ConfigTypeEnum::getKeys();
         $list = $configRepo->getConfigListByGroup();
-        return ResultHelper::returnFormat('', ResponseCode::SUCCESS, compact('configGroup', 'configType', 'list'));
+        return $this->success(compact('configGroup', 'configType', 'list'));
     }
+
 
     /**
      * 添加配置项
      * @param ConfigRequest $request
      * @param ConfigRepo $configRepo
-     * @return array
+     * @return array|\Illuminate\Http\JsonResponse
      */
     public function store(ConfigRequest $request, ConfigRepo $configRepo)
     {
         $params = $request->all();
         $isExist = $configRepo->findByField('name', trim($params['name']), ['conf_id']);
         if ($isExist) {
-            return ResultHelper::returnFormat('变量名已存在', ResponseCode::ERROR);
+            return $this->badSuccessRequest('变量名已存在');
         }
         $configRepo->transaction();
         try {
@@ -42,14 +43,14 @@ class Config extends Controller
             if ($config) {
                 $configRepo->commit();
                 $configRepo->clearConfig();
-                return ResultHelper::returnFormat('添加配置型成功', ResponseCode::SUCCESS);
+                return $this->successRequest('添加配置型成功');
             } else {
                 $configRepo->rollBack();
-                return ResultHelper::returnFormat('添加配置项失败', ResponseCode::ERROR);
+                return $this->badSuccessRequest('添加配置项失败');
             }
         } catch (QueryException $exception) {
             $configRepo->rollBack();
-            return ResultHelper::returnFormat($exception->getMessage(), ResponseCode::ERROR);
+            return $this->badSuccessRequest($exception->getMessage());
         }
     }
 
@@ -57,42 +58,61 @@ class Config extends Controller
      * 更新配置项
      * @param Request $request
      * @param ConfigRepo $configRepo
-     * @return array
+     * @param RegionRepo $regionRepo
+     * @return array|\Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, ConfigRepo $configRepo)
+    public function update(Request $request, ConfigRepo $configRepo, RegionRepo $regionRepo)
     {
         $configRepo->clearConfig();
         $params = $request->all();
         if (!$params) {
-            return ResultHelper::returnFormat('没有修改项', ResponseCode::ERROR);
+            return $this->badSuccessRequest('没有修改项');
         }
         $list = $configRepo->getConfigList();
         $updateData = [];
+        $regionId = 0;
+        $regionData = [];
         foreach ($list as $key => $item) {
             if (array_key_exists($item['name'], $params)) {
-                $updateData[] = [
-                    'conf_id' => $item['conf_id'],
-                    'value' => $configRepo->setValueAttributes($key, $params[$key], $item),
-                ];
+                if ($item['type'] == 'region') {
+                    $regionId = $item['conf_id'];
+                    $region = Arr::flatten($params[$key]);
+                    $areaIds = array_unique($region);
+                    $regionData = [
+                        'value' => $params[$key],//$configRepo->setValueAttributes($key, $params[$key], $item),
+                        'content' => $regionRepo->getRegionTreeByIds($areaIds),
+                    ];
+                } else {
+                    $updateData[] = [
+                        'conf_id' => $item['conf_id'],
+                        'value' => $configRepo->setValueAttributes($key, $params[$key], $item),
+                    ];
+                }
             }
         }
         if (!$updateData) {
-            return ResultHelper::returnFormat('没有修改项', ResponseCode::ERROR);
+            return $this->badSuccessRequest('没有修改项');
         }
+
         $configRepo->transaction();
         try {
+            $regionFlag = true;
+            //TODO：混合修改，这里会出现修改失败
+            if ($regionData && $regionId > 0) {
+                $regionFlag = $configRepo->updateById($regionData, $regionId);
+            }
             $flag = $configRepo->updateBatch($updateData);
-            if ($flag) {
+            if ($flag || $regionFlag) {
                 $configRepo->commit();
                 $configRepo->clearConfig();
-                return ResultHelper::returnFormat('修改成功', ResponseCode::SUCCESS);
+                return $this->successRequest('修改成功');
             } else {
                 $configRepo->rollBack();
-                return ResultHelper::returnFormat('修改失败', ResponseCode::ERROR);
+                return $this->badSuccessRequest('修改失败或值未变');
             }
         } catch (QueryException $exception) {
             $configRepo->rollBack();
-            return ResultHelper::returnFormat($exception->getMessage(), ResponseCode::ERROR);
+            return $this->badSuccessRequest($exception->getMessage());
         }
     }
 
@@ -100,27 +120,27 @@ class Config extends Controller
      * 删除配置项
      * @param int $confId
      * @param ConfigRepo $configRepo
-     * @return array
+     * @return array|\Illuminate\Http\JsonResponse
      */
     public function destroy(int $confId, ConfigRepo $configRepo)
     {
         $config = $configRepo->getByPkId($confId);
         if (!$config) {
-            return ResultHelper::returnFormat('配置信息不存在', ResponseCode::ERROR);
+            return $this->badSuccessRequest('配置信息不存在');
         }
         $configRepo->transaction();
         try {
             if ($config->delete()) {
                 $configRepo->commit();
                 $configRepo->clearConfig();
-                return ResultHelper::returnFormat('删除成功');
+                return $this->successRequest('删除成功');
             } else {
                 $configRepo->rollBack();
-                return ResultHelper::returnFormat('修改失败或值未变', ResponseCode::ERROR);
+                return $this->badSuccessRequest('删除失败');
             }
         } catch (QueryException $exception) {
             $configRepo->rollBack();
-            return ResultHelper::returnFormat($exception->getMessage(), ResponseCode::ERROR);
+            return $this->badSuccessRequest($exception->getMessage());
         }
     }
 }

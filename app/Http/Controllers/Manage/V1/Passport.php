@@ -7,16 +7,12 @@ namespace App\Http\Controllers\Manage\V1;
 
 use App\Events\PassportManageLoginAfterEvent;
 use App\Events\PassportManageRefreshTokenEvent;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\ApiController;
 use App\Http\Requests\Passport\ManageLoginRequest;
-use App\Http\ResponseCode;
-use App\Services\Repositories\Manage\Interfaces\IManage;
+use App\Services\Repositories\Manage\ManageRepo;
 use App\Support\CryptoJsSup;
-use App\Validators\Passport\ManageLoginValidator;
-use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use JoyceZ\LaravelLib\Contracts\Captcha as CaptchaInterface;
-use JoyceZ\LaravelLib\Helpers\ResultHelper;
 use JoyceZ\LaravelLib\Security\AopPassword;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Exceptions\TokenBlacklistedException;
@@ -28,20 +24,20 @@ use Tymon\JWTAuth\Facades\JWTFactory;
  * Class Passport
  * @package App\Http\Controllers\Manage\V1
  */
-class Passport extends Controller
+class Passport extends ApiController
 {
 
     /**
      * 获取图形验证码
      * @param CaptchaInterface $captchaRepo
-     * @return array
+     * @return \Illuminate\Http\JsonResponse
      */
     public function captcha(CaptchaInterface $captchaRepo)
     {
         $captcha = $captchaRepo->makeCode()->get();
         $captchaImg = Arr::get($captcha, 'image', '');
         $captchaUniqid = Arr::get($captcha, 'uniq', '');
-        return ResultHelper::returnFormat('success', ResponseCode::SUCCESS, [
+        return $this->success([
             'captcha' => $captchaImg,
             config('landao.passport.check_captcha_cache_key') => $captchaUniqid
         ]);
@@ -51,21 +47,21 @@ class Passport extends Controller
      * 管理员登陆
      * @param ManageLoginRequest $request
      * @param CaptchaInterface $captchaRepo
-     * @param IManage $manageRepo
-     * @return array
+     * @param ManageRepo $manageRepo
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function login(ManageLoginRequest $request, CaptchaInterface $captchaRepo, IManage $manageRepo)
+    public function login(ManageLoginRequest $request, CaptchaInterface $captchaRepo, ManageRepo $manageRepo)
     {
         $params = $request->all();
 
         //图形验证码校验
         $captchaUniq = $params[config('landao.passport.check_captcha_cache_key')];
         if (!$captchaRepo->check($params['captcha'], $captchaUniq)) {
-            return ResultHelper::returnFormat('验证码错误', ResponseCode::ERROR);
+            return $this->badSuccessRequest('验证码错误');
         }
         $manage = $manageRepo->getInfoByUsername(trim($params['username']));
         if (!$manage) {
-            return ResultHelper::returnFormat('账号不存在', ResponseCode::ERROR);
+            return $this->badSuccessRequest('账号不存在');
         }
         $manageInfo = $manage->makeVisible(['password', 'pwd_salt'])->toArray();
         //将前端加密的密码进行解密
@@ -75,10 +71,10 @@ class Passport extends Controller
             ->withSalt()
             ->check($manageInfo['password'], (string)$password, (string)$manageInfo['pwd_salt']);
         if (!$pwdFlag) {
-            return ResultHelper::returnFormat('账号密码错误', ResponseCode::ERROR);
+            return $this->badSuccessRequest('账号密码错误');
         }
         if (intval($manageInfo['manage_status']) != 1) {
-            return ResultHelper::returnFormat('用户已被禁用', ResponseCode::ERROR);
+            return $this->badSuccessRequest('用户已被禁用');
         }
 //        $token = JWTAuth::fromUser($manage);
         $token = $this->withAuthGuard('admin')->login($manage);
@@ -88,7 +84,7 @@ class Passport extends Controller
             'expires_in' => JWTFactory::getTTL() * 60
         ];
         event(new PassportManageLoginAfterEvent($manage, $jwt));
-        return ResultHelper::returnFormat('登录成功', ResponseCode::SUCCESS, $jwt);
+        return $this->success($jwt, '登录成功');
     }
 
     /**
@@ -97,20 +93,20 @@ class Passport extends Controller
      * https://zhuanlan.zhihu.com/p/80352766
      * https://github.com/tymondesigns/jwt-auth/issues?q=refresh
      * https://jwt-auth.readthedocs.io/en/develop/search.html?q=expires_in
-     * @param IManage $manageRepo
-     * @return array
+     * @param ManageRepo $manageRepo
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function refreshToken(IManage $manageRepo)
+    public function refreshToken(ManageRepo $manageRepo)
     {
         try {
 //            $user = JWTAuth::parseToken()->touser();
             $manage = $this->getAuthUser('admin');
 //            $manage = $manageRepo->getByPkId($user->manage_id);
             if (!$manage) {
-                return ResultHelper::returnFormat('账号不存在', ResponseCode::ERROR);
+                return $this->badSuccessRequest('账号不存在');
             }
             if (intval($manage->manage_status) != 1) {
-                return ResultHelper::returnFormat('用户已被禁用', ResponseCode::ERROR);
+                return $this->badSuccessRequest('用户已被禁用');
             }
 //            $token = JWTAuth::parseToken()->refresh();
             //TODO:refresh 中不要再加任何参数，否则 getJWTCustomClaims 无效，刷新的令牌不会加上，model 中自定义的 role 参数
@@ -121,17 +117,17 @@ class Passport extends Controller
                 'expires_in' => JWTFactory::getTTL() * 60
             ];
             event(new PassportManageRefreshTokenEvent($manage, $jwt));
-            return ResultHelper::returnFormat('刷新成功', ResponseCode::SUCCESS, $jwt);
+            return $this->success($jwt, '刷新成功');
         } catch (TokenInvalidException $e) {
-            return ResultHelper::returnFormat('无效token', ResponseCode::LOGIN_TOKEN_TIME_DIE);
+            return $this->unAuthorized('无效token');
         } catch (JWTException $e) {
-            return ResultHelper::returnFormat('无法刷新令牌', ResponseCode::LOGIN_TOKEN_TIME_DIE);
+            return $this->unAuthorized('无法刷新令牌');
         }
     }
 
     /**
      * 退出登录
-     * @return array
+     * @return \Illuminate\Http\JsonResponse
      */
     public function logout()
     {
@@ -142,11 +138,11 @@ class Passport extends Controller
 //            JWTAuth::parseToken()->invalidate();//退出
             //使token无效
             $this->withAuthGuard('admin')->invalidate(true);
-            return ResultHelper::returnFormat('登出成功', ResponseCode::SUCCESS);
+            return $this->successRequest('登出成功');
         } catch (TokenInvalidException $e) {
-            return ResultHelper::returnFormat('token 无效', ResponseCode::LOGIN_TOKEN_TIME_DIE);
+            return $this->unAuthorized('无效token');
         } catch (TokenBlacklistedException $e) {
-            return ResultHelper::returnFormat('token 无效', ResponseCode::LOGIN_TOKEN_TIME_DIE);
+            return $this->unAuthorized('无效token');
         }
     }
 

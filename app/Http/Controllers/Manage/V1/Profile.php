@@ -5,14 +5,14 @@ declare (strict_types=1);
 namespace App\Http\Controllers\Manage\V1;
 
 
-use App\Http\Controllers\Controller;
-use App\Http\ResponseCode;
-use App\Services\Repositories\Manage\Interfaces\IManage;
-use App\Services\Repositories\Manage\Interfaces\IMenu;
-use App\Validators\Manage\ManageValidator;
-use Illuminate\Http\Request;
+use App\Http\Controllers\ApiController;
+use App\Http\Requests\Manage\ManageRequest;
+use App\Services\Repositories\Manage\ManageRepo;
+use App\Services\Repositories\Manage\MenuRepo;
+use App\Services\Repositories\School\SchoolGradeRepo;
+use App\Services\Repositories\System\ConfigRepo;
+use App\Services\Repositories\System\DictionaryRepo;
 use JoyceZ\LaravelLib\Helpers\FiltersHelper;
-use JoyceZ\LaravelLib\Helpers\ResultHelper;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 /**
@@ -20,53 +20,64 @@ use Tymon\JWTAuth\Facades\JWTAuth;
  * Class Profile
  * @package App\Http\Controllers\Manage\V1
  */
-class Profile extends Controller
+class Profile extends ApiController
 {
     /**
      * 获取个人信息
-     * @param IManage $manageRepo
-     * @return array
+     * @param ManageRepo $manageRepo
+     * @param DictionaryRepo $dictionaryRepo
+     * @param SchoolGradeRepo $gradeRepo
+     * @param ConfigRepo $configRepo
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
-    public function index(IManage $manageRepo)
+    public function index(ManageRepo $manageRepo, DictionaryRepo $dictionaryRepo, SchoolGradeRepo $gradeRepo, ConfigRepo $configRepo)
     {
         $user = JWTAuth::parseToken()->touser();
         $user->roles;
         $user->department;
         $manage = $manageRepo->parseDataRow($user->toArray());
-        return ResultHelper::returnFormat('success', ResponseCode::SUCCESS, ['userInfo' => $manage]);
+        //字典
+        $dictionary = $dictionaryRepo->getAllDictByGroup();
+        //年级
+        $schoolGrade = $gradeRepo->getListBySchoolType($dictionary['school_type']);
+        //运营区域
+        $operationArea = $configRepo->getConfigByName('operation_area');
+        return $this->success([
+            'userInfo' => $manage,
+            'dictionary' => $dictionary,
+            'schoolGrade' => $schoolGrade,
+            'operationArea' => $operationArea['content'],
+        ]);
     }
 
     /**
      * 更新个人信息
-     * @param Request $request
-     * @param ManageValidator $validator 表单验证规则
-     * @return array
+     * @param ManageRequest $request
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, ManageValidator $validator)
+    public function update(ManageRequest $request)
     {
         $params = $request->only(['nickname', 'realname', 'phone', 'introduce']);
         //表单校验
-        $error = $validator->make($params)->errors();
-        if ($error->count() > 0) {
-            return ResultHelper::returnFormat($error->first(), ResponseCode::ERROR);
-        }
+
         $user = JWTAuth::parseToken()->touser();
         $user->nickname = FiltersHelper::filterXSS(trim($params['nickname']));
         $user->realname = FiltersHelper::filterXSS(trim($params['realname']));
         $user->phone = trim($params['phone']);
         $user->introduce = FiltersHelper::filterXSS(trim((string)$params['introduce']));
         if ($user->save()) {
-            return ResultHelper::returnFormat('更新个人信息成功', ResponseCode::SUCCESS);
+            return $this->successRequest('更新个人信息成功');
         }
-        return ResultHelper::returnFormat('更新个人信息失败，请稍后再试...', ResponseCode::ERROR);
+        return $this->badSuccessRequest('更新个人信息失败');
     }
 
     /**
      * 获取用户权限菜单和权限按钮
-     * @param IMenu $menuRepo
-     * @return array
+     * @param MenuRepo $menuRepo
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function rules(IMenu $menuRepo)
+    public function rules(MenuRepo $menuRepo)
     {
         $user = JWTAuth::parseToken()->touser();
         $roleIds = [];
@@ -76,8 +87,8 @@ class Profile extends Controller
         $ret = $menuRepo->generatePermission($roleIds, (boolean)$user->is_super);
         $menus = $menuRepo->parseDataRows($ret['menus']);
         $power = $ret['power'];
-        $menuGroup=$ret['menuGroup'];
-        return ResultHelper::returnFormat('success', ResponseCode::SUCCESS, compact('menus', 'power','menuGroup'));
+        $menuGroup = $ret['menuGroup'];
+        return $this->success( compact('menus', 'power', 'menuGroup'));
     }
 
 }

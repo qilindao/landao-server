@@ -4,34 +4,32 @@ declare (strict_types=1);
 namespace App\Http\Controllers\Manage\V1;
 
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\ApiController;
 use App\Http\Requests\Manage\RoleRequest;
-use App\Http\ResponseCode;
-use App\Services\Repositories\Manage\Interfaces\IRole;
-use App\Validators\Manage\RoleValidator;
+use App\Services\Repositories\Manage\RoleRepo;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use JoyceZ\LaravelLib\Helpers\FiltersHelper;
-use JoyceZ\LaravelLib\Helpers\ResultHelper;
 
 /**
  * 角色
  * Class Role
  * @package App\Http\Controllers\Manage\V1
  */
-class Role extends Controller
+class Role extends ApiController
 {
     /**
      * 角色列表
      * @param Request $request
-     * @param IRole $roleRepo
-     * @return array
+     * @param RoleRepo $roleRepo
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function index(Request $request, IRole $roleRepo)
+    public function index(Request $request, RoleRepo $roleRepo)
     {
         $params = $request->all();
         $ret = $roleRepo->getList($params, $params['order'] ?? 'created_at', $params['sort'] ?? 'desc');
         $list = $roleRepo->parseDataRows($ret['data']);
-        return ResultHelper::returnFormat('success', ResponseCode::SUCCESS, [
+        return $this->success([
             'pagination' => [
                 'total' => $ret['total'],
                 'page_size' => $ret['per_page'],
@@ -43,26 +41,26 @@ class Role extends Controller
 
     /**
      * 获取全部角色
-     * @param IRole $roleRepo
-     * @return array
+     * @param RoleRepo $roleRepo
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function lists(IRole $roleRepo)
+    public function lists(RoleRepo $roleRepo)
     {
         $lists = $roleRepo->all(['role_id', 'role_name']);
-        return ResultHelper::returnFormat('success', ResponseCode::SUCCESS,$roleRepo->parseDataRows($lists->toArray()));
+        return $this->success($roleRepo->parseDataRows($lists->toArray()));
     }
 
     /**
      * 获取详情
      * @param int $id
-     * @param IRole $roleRepo
-     * @return array
+     * @param RoleRepo $roleRepo
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function read(int $id, IRole $roleRepo)
+    public function read(int $id, RoleRepo $roleRepo)
     {
         $role = $roleRepo->getByPkId($id);
         if (!$role) {
-            return ResultHelper::returnFormat('角色不存在', ResponseCode::ERROR);
+            return $this->badSuccessRequest('角色不存在');
         }
         $menuIds = [];
         foreach ($role->menus as $item) {
@@ -70,101 +68,133 @@ class Role extends Controller
         }
         $roleData = $role->toArray();
 //        $roleData['menus'] = $menuIds ? (new HashIdsSup())->encodeArray($menuIds) : [];
-        return ResultHelper::returnFormat('success', ResponseCode::SUCCESS, $roleRepo->parseDataRow($roleData));
+        return $this->success($roleRepo->parseDataRow($roleData));
     }
 
     /**
      * 新建角色
      * @param RoleRequest $request
-     * @param IRole $roleRepo
-     * @return array
+     * @param RoleRepo $roleRepo
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function store(RoleRequest $request, IRole $roleRepo)
+    public function store(RoleRequest $request, RoleRepo $roleRepo)
     {
         $params = $request->all();
         $data = [
             'role_name' => FiltersHelper::filterXSS(trim($params['role_name'])),
             'role_desc' => FiltersHelper::filterXSS(trim($params['role_desc'])),
         ];
-        $role = $roleRepo->create($data);
-        if ($role) {
-            if ($params['menus']) {
-                //对数据进行解密
+        $roleRepo->transaction();
+        try {
+            $role = $roleRepo->create($data);
+            if ($role) {
+                if ($params['menus']) {
+                    //对数据进行解密
 //                $ids = (new HashIdsSup())->decodeArray($params['menus']);
-                $ids =$params['menus'];
-                $role->menus()->sync(array_filter(array_unique($ids)));
+                    $ids = $params['menus'];
+                    $role->menus()->sync(array_filter(array_unique($ids)));
+                }
+                $roleRepo->commit();
+                return $this->successRequest('新增成功');
             }
-            return ResultHelper::returnFormat('新建成功', ResponseCode::SUCCESS);
+            $roleRepo->rollBack();
+            return $this->badSuccessRequest('新增失败');
+        } catch (QueryException $exception) {
+            $roleRepo->rollBack();
+            return $this->badSuccessRequest($exception->getMessage());
         }
-        return ResultHelper::returnFormat('网络繁忙，请稍后再试...', ResponseCode::ERROR);
     }
 
     /**
      * 更新角色
      * @param int $roleId
      * @param RoleRequest $request
-     * @param IRole $roleRepo
-     * @return array
+     * @param RoleRepo $roleRepo
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function update(int $roleId, RoleRequest $request, IRole $roleRepo)
+    public function update(int $roleId, RoleRequest $request, RoleRepo $roleRepo)
     {
         $params = $request->all();
 
         $role = $roleRepo->getByPkId($roleId);
         if (!$role) {
-            return ResultHelper::returnFormat('该角色不存在', ResponseCode::ERROR);
+            return $this->badSuccessRequest('该角色不存在',);
         }
         $role->role_name = FiltersHelper::filterXSS(trim($params['role_name']));
         $role->role_desc = FiltersHelper::filterXSS(trim($params['role_desc']));
-        if ($role->save()) {
-            if ($params['menus']) {
-                //对数据进行解密
-                $ids = $params['menus'];//(new HashIdsSup())->decodeArray($params['menus']);
-                $role->menus()->sync(array_filter(array_unique($ids)));
+        dd($params);
+        $roleRepo->transaction();
+        try {
+            if ($role->save()) {
+                if ($params['menus']) {
+                    //对数据进行解密
+                    $ids = $params['menus'];//(new HashIdsSup())->decodeArray($params['menus']);
+                    $role->menus()->sync(array_filter(array_unique($ids)));
+                }
+                $roleRepo->commit();
+                return $this->successRequest('更新成功');
             }
-            return ResultHelper::returnFormat('修改成功', ResponseCode::SUCCESS);
+            $roleRepo->rollBack();
+            return $this->badSuccessRequest('更新失败');
+        } catch (QueryException $exception) {
+            $roleRepo->rollBack();
+            return $this->badSuccessRequest($exception->getMessage());
         }
-        return ResultHelper::returnFormat('网络繁忙，请稍后再试...', ResponseCode::ERROR);
     }
 
     /**
      * 删除
      * @param int $roleId
-     * @param IRole $roleRepo
-     * @return array
+     * @param RoleRepo $roleRepo
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy(int $roleId, IRole $roleRepo)
+    public function destroy(int $roleId, RoleRepo $roleRepo)
     {
         $role = $roleRepo->getByPkId($roleId);
         if (!$role) {
-            return ResultHelper::returnFormat('角色不存在',ResponseCode::ERROR);
+            return $this->badSuccessRequest('角色不存在');
         }
-        if ($role->delete()) {
-            $role->menus()->detach($roleId);
-            return ResultHelper::returnFormat('删除成功');
+        $roleRepo->transaction();
+        try {
+            if ($role->delete()) {
+                $role->menus()->detach($roleId);
+                $roleRepo->commit();
+                return $this->successRequest('删除成功');
+            }
+            $roleRepo->rollBack();
+            return $this->badSuccessRequest('删除失败');
+        } catch (QueryException $exception) {
+            $roleRepo->rollBack();
+            return $this->badSuccessRequest($exception->getMessage());
         }
-        return ResultHelper::returnFormat('网络繁忙，请稍后再试...', ResponseCode::ERROR);
     }
 
     /**
      * 快捷修改指定表字段值
      * @param Request $request
-     * @param  IRole $roleRepo
-     * @return array|mixed
+     * @param RoleRepo $roleRepo
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function modifyFiled(Request $request, IRole $roleRepo)
+    public function modifyFiled(Request $request, RoleRepo $roleRepo)
     {
         $id = intval($request->post('role_id'));
         if ($id <= 0) {
-            return ResultHelper::returnFormat('缺少必要的参数', ResponseCode::ERROR);
+            return $this->badSuccessRequest('缺少必要的参数');
         }
         $fieldName = (string)$request->post('field_name');
         $fieldValue = $request->post('field_value');
-        $ret = $roleRepo->updateFieldById($id, $fieldName, $fieldValue);
-        if ($ret) {
-            return ResultHelper::returnFormat('修改成功', ResponseCode::SUCCESS);
+        $roleRepo->transaction();
+        try {
+            if ($roleRepo->updateFieldById($id, $fieldName, $fieldValue)) {
+                $roleRepo->commit();
+                return $this->successRequest('更新成功');
+            }
+            $roleRepo->rollBack();
+            return $this->badSuccessRequest('更新失败');
+        } catch (QueryException $exception) {
+            $roleRepo->rollBack();
+            return $this->badSuccessRequest($exception->getMessage());
         }
-        return ResultHelper::returnFormat('服务器繁忙，请稍后再试', ResponseCode::ERROR);
     }
 
 

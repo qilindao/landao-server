@@ -4,14 +4,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Manage\V1;
 
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\ApiController;
 use App\Http\Requests\Manage\DeptRequest;
-use App\Http\ResponseCode;
-use App\Services\Repositories\Manage\Interfaces\IDepartment;
-use App\Validators\Manage\DeptValidator;
+use App\Services\Repositories\Manage\DepartmentRepo;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use JoyceZ\LaravelLib\Helpers\FiltersHelper;
-use JoyceZ\LaravelLib\Helpers\ResultHelper;
 
 /**
  *
@@ -22,98 +20,121 @@ use JoyceZ\LaravelLib\Helpers\ResultHelper;
  * Class Dept
  * @package App\Http\Controllers\Manage\V1
  */
-class Dept extends Controller
+class Dept extends ApiController
 {
     /**
      * 列表
      * @param Request $request
-     * @param IDepartment $departmentRepo
-     * @return array
+     * @param DepartmentRepo $departmentRepo
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function index(Request $request, IDepartment $departmentRepo)
+    public function index(Request $request, DepartmentRepo $departmentRepo)
     {
         $params = $request->all();
         $ret = $departmentRepo->getList($params);
-        return ResultHelper::returnFormat('success', 200, $departmentRepo->parseDataRows($ret));
+        return $this->success($departmentRepo->parseDataRows($ret));
     }
 
     /**
      * 获取详情
      * @param int $id
-     * @param IDepartment $departmentRepo
-     * @return array
+     * @param DepartmentRepo $departmentRepo
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function read(int $id, IDepartment $departmentRepo)
+    public function read(int $id, DepartmentRepo $departmentRepo)
     {
         $dept = $departmentRepo->getByPkId($id);
         if (!$dept) {
-            return ResultHelper::returnFormat('部门不存在', ResponseCode::ERROR);
+            return $this->badSuccessRequest('部门不存在');
         }
-        return ResultHelper::returnFormat('success', ResponseCode::SUCCESS, $departmentRepo->parseDataRow($dept->toArray()));
+        return $this->success($departmentRepo->parseDataRow($dept->toArray()));
     }
 
     /**
      * 新建
      * @param DeptRequest $request
-     * @param IDepartment $departmentRepo
-     * @return array
+     * @param DepartmentRepo $departmentRepo
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function store(DeptRequest $request, IDepartment $departmentRepo)
+    public function store(DeptRequest $request, DepartmentRepo $departmentRepo)
     {
         $params = $request->all();
-
         $data = [
             'dept_name' => FiltersHelper::filterXSS(trim($params['dept_name'])),
             'dept_desc' => FiltersHelper::filterXSS(trim($params['dept_desc'])),
             'dept_order' => intval($params['dept_order']),
             'parent_id' => (int)$params['parent_id']
         ];
-        $dept = $departmentRepo->create($data);
-        if ($dept) {
-            return ResultHelper::returnFormat('新建成功', ResponseCode::SUCCESS);
+        $departmentRepo->transaction();
+        try {
+            if ($departmentRepo->create($data)) {
+                $departmentRepo->commit();
+                return $this->successRequest('新增成功');
+            }
+            $departmentRepo->rollBack();
+            return $this->badSuccessRequest('新增失败');
+        } catch (QueryException $exception) {
+            $departmentRepo->rollBack();
+            return $this->badSuccessRequest($exception->getMessage());
         }
-        return ResultHelper::returnFormat('网络繁忙，请稍后再试...', ResponseCode::ERROR);
     }
 
     /**
      * 更新
      * @param int $deptId
      * @param DeptRequest $request
-     * @param IDepartment $departmentRepo
-     * @return array
+     * @param DepartmentRepo $departmentRepo
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function update(int $deptId, DeptRequest $request, IDepartment $departmentRepo)
+    public function update(int $deptId, DeptRequest $request, DepartmentRepo $departmentRepo)
     {
         $params = $request->all();
         $dept = $departmentRepo->getByPkId($deptId);
         if (!$dept) {
-            return ResultHelper::returnFormat('部门信息不存在', ResponseCode::ERROR);
+            return $this->badSuccessRequest('部门信息不存在');
         }
         $dept->dept_name = FiltersHelper::filterXSS(trim($params['dept_name']));
         $dept->dept_desc = FiltersHelper::filterXSS(trim($params['dept_desc']));
         $dept->dept_order = intval($params['dept_order']);
         $dept->parent_id = (int)$params['parent_id'];
-        if ($dept->save()) {
-            return ResultHelper::returnFormat('更新成功', ResponseCode::SUCCESS);
+
+        $departmentRepo->transaction();
+        try {
+            if ($dept->save()) {
+                $departmentRepo->commit();
+                return $this->successRequest('更新成功');
+            }
+            $departmentRepo->rollBack();
+            return $this->badSuccessRequest('更新失败');
+        } catch (QueryException $exception) {
+            $departmentRepo->rollBack();
+            return $this->badSuccessRequest($exception->getMessage());
         }
-        return ResultHelper::returnFormat('网络繁忙，请稍后再试...', ResponseCode::ERROR);
     }
 
     /**
      * 删除
      * @param int $deptId
-     * @param IDepartment $departmentRepo
-     * @return array
+     * @param DepartmentRepo $departmentRepo
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy(int $deptId, IDepartment $departmentRepo)
+    public function destroy(int $deptId, DepartmentRepo $departmentRepo)
     {
         $dept = $departmentRepo->getByPkId($deptId);
         if (!$dept) {
-            return ResultHelper::returnFormat('部门不存在');
+            return $this->badSuccessRequest('部门不存在');
         }
-        if ($dept->delete()) {
-            return ResultHelper::returnFormat('删除成功');
+        $departmentRepo->transaction();
+        try {
+            if ($dept->delete()) {
+                $departmentRepo->commit();
+                return $this->successRequest( '删除成功');
+            }
+            $departmentRepo->rollBack();
+            return $this->badSuccessRequest('删除失败');
+        } catch (QueryException $exception) {
+            $departmentRepo->rollBack();
+            return $this->badSuccessRequest($exception->getMessage());
         }
-        return ResultHelper::returnFormat('网络繁忙，请稍后再试...', ResponseCode::ERROR);
     }
 }

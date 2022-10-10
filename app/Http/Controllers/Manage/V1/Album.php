@@ -4,21 +4,21 @@
 namespace App\Http\Controllers\Manage\V1;
 
 
-use App\Http\Controllers\Controller;
-use App\Http\ResponseCode;
+use App\Http\Controllers\ApiController;
+use App\Http\Requests\System\AlbumRequest;
 use App\Services\Repositories\System\AlbumFileRepo;
 use App\Services\Repositories\System\AlbumRepo;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use JoyceZ\LaravelLib\Helpers\FiltersHelper;
-use JoyceZ\LaravelLib\Helpers\ResultHelper;
 use JoyceZ\LaravelLib\Helpers\TreeHelper;
 
-class Album extends Controller
+class Album extends ApiController
 {
     /**
      * 相册分类
      * @param AlbumRepo $albumRepo
-     * @return array
+     * @return \Illuminate\Http\JsonResponse
      */
     public function category(AlbumRepo $albumRepo)
     {
@@ -26,79 +26,99 @@ class Album extends Controller
             ->all(['album_id', 'album_name', 'parent_id', 'album_sort', 'is_default'])
             ->toArray();
         array_unshift($lists, ['album_id' => 0, 'album_name' => '全部文件', 'parent_id' => 0, 'album_sort' => 0, 'is_default' => true]);
-        return ResultHelper::returnFormat('success', ResponseCode::SUCCESS, TreeHelper::listToTree($lists, 0, 'album_id', 'parent_id'));
+        return $this->success(TreeHelper::listToTree($lists, 0, 'album_id', 'parent_id'));
     }
 
     /**
      * 提交相册分类
-     * @param Request $request
+     * @param AlbumRequest $request
      * @param AlbumRepo $albumRepo
-     * @return array
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request, AlbumRepo $albumRepo)
+    public function store(AlbumRequest $request, AlbumRepo $albumRepo)
     {
         $params = [
             'album_name' => FiltersHelper::stringFilter($request->post('album_name')),
             'parent_id' => intval($request->post('parent_id')),
             'is_default' => 0
         ];
-        $album = $albumRepo->create($params);
-        if ($album) {
-            $params['album_id'] = $album->album_id;
-            return ResultHelper::returnFormat('添加分组成功', 200, $params);
+        $albumRepo->transaction();
+        try {
+            $album = $albumRepo->create($params);
+            if ($album) {
+                $albumRepo->commit();
+                $params['album_id'] = $album->album_id;
+                return $this->success($params, '添加分组成功');
+            }
+            $albumRepo->rollBack();
+            return $this->badSuccessRequest('新增失败');
+        } catch (QueryException $exception) {
+            $albumRepo->rollBack();
+            return $this->badSuccessRequest($exception->getMessage());
         }
-        return ResultHelper::returnFormat('网络繁忙，请稍后再试', -1);
     }
 
     /**
      * 更新相册分类
      * @param int $id
-     * @param Request $request
+     * @param AlbumRequest $request
      * @param AlbumRepo $albumRepo
-     * @return array
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function update(int $id, Request $request, AlbumRepo $albumRepo)
+    public function update(int $id, AlbumRequest $request, AlbumRepo $albumRepo)
     {
         if ($id <= 0) {
-            return ResultHelper::returnFormat('缺少必要的参数', -1);
+            return $this->badSuccessRequest('缺少必要的参数');
         }
         $album = $albumRepo->getByPkId($id);
-        if (empty($album)) {
-            return ResultHelper::returnFormat('该分组不存在', -1);
+        if (!$album) {
+            return $this->badSuccessRequest('相册分组不存在');
         }
-        $album->album_name = FiltersHelper::stringFilter($request->post('album_name'));
-        if ($album->save()) {
-            return ResultHelper::returnFormat('修改分组名称成功', 200, $album);
+        $albumRepo->transaction();
+        try {
+            $album->album_name = FiltersHelper::stringFilter($request->post('album_name'));
+            if ($album->save()) {
+                $albumRepo->commit();
+                return $this->successRequest('更新成功');
+            }
+            $albumRepo->rollBack();
+            return $this->badSuccessRequest('更新失败');
+        } catch (QueryException $exception) {
+            $albumRepo->rollBack();
+            return $this->badSuccessRequest($exception->getMessage());
         }
-        return ResultHelper::returnFormat('网络繁忙，请稍后再试', -1);
     }
 
     /**
      * 删除相册分类
      * @param int $id
-     * @param Request $request
      * @param AlbumRepo $albumRepo
      * @param AlbumFileRepo $albumFileRepo
-     * @return array
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy(int $id, Request $request, AlbumRepo $albumRepo, AlbumFileRepo $albumFileRepo)
+    public function destroy(int $id, AlbumRepo $albumRepo, AlbumFileRepo $albumFileRepo)
     {
-        if ($id <= 0) {
-            return ResultHelper::returnFormat('缺少必要的参数', -1);
-        }
         $album = $albumRepo->getByPkId($id);
-        if (empty($album)) {
-            return ResultHelper::returnFormat('该分组不存在', -1);
+        if (!$album) {
+            return $this->badSuccessRequest('该分组不存在');
         }
-        if ($album->delete()) {
-            //将相册下的分类移到默认分类下
-            if ($albumFileRepo->count(['album_id' => $id], 'file_id') > 0) {
-                $default = $albumRepo->findByField('is_default', 1, ['album_id']);
-                $albumFileRepo->updateByWhere(['album_id' => $id], ['album_id' => $default->album_id]);
+        $albumRepo->transaction();
+        try {
+            if ($album->delete()) {
+                //将相册下的分类移到默认分类下
+                if ($albumFileRepo->count(['album_id' => $id], 'file_id') > 0) {
+                    $default = $albumRepo->findByField('is_default', 1, ['album_id']);
+                    $albumFileRepo->updateByWhere(['album_id' => $id], ['album_id' => $default->album_id]);
+                }
+                $album->commit();
+                return $this->successRequest('删除成功');
             }
-            return ResultHelper::returnFormat('删除分组成功', 200);
+            $albumRepo->rollBack();
+            return $this->badSuccessRequest('删除失败');
+        } catch (QueryException $exception) {
+            $albumRepo->rollBack();
+            return $this->badSuccessRequest($exception->getMessage());
         }
-        return ResultHelper::returnFormat('网络繁忙，请稍后再试', -1);
     }
 
     /**
@@ -114,35 +134,43 @@ class Album extends Controller
 
     /**
      * 快捷修改指定表字段值
-     * @param Request $request
+     * @param AlbumRequest $request
      * @param AlbumFileRepo $albumFileRepo )
      * @return array|mixed
      */
-    public function modifyFiled(Request $request, AlbumFileRepo $albumFileRepo)
+    public function modifyFiled(AlbumRequest $request, AlbumFileRepo $albumFileRepo)
     {
         $id = intval($request->post('file_id'));
         if ($id <= 0) {
-            return ResultHelper::returnFormat('缺少必要的参数', ResponseCode::ERROR);
+            return $this->badSuccessRequest('缺少必要的参数');
         }
         $fieldName = (string)$request->post('field_name');
         $fieldValue = $request->post('field_value');
-        $ret = $albumFileRepo->updateFieldById($id, $fieldName, $fieldValue);
-        if ($ret) {
-            return ResultHelper::returnFormat('修改成功', ResponseCode::SUCCESS);
+        $albumFileRepo->transaction();
+        try {
+            $ret = $albumFileRepo->updateFieldById($id, $fieldName, $fieldValue);
+            if ($ret) {
+                $albumFileRepo->commit();
+                return $this->successRequest('修改成功');
+            }
+            $albumFileRepo->rollBack();
+            return $this->badSuccessRequest('修改失败');
+        } catch (QueryException $exception) {
+            $albumFileRepo->rollBack();
+            return $this->badSuccessRequest($exception->getMessage());
         }
-        return ResultHelper::returnFormat('服务器繁忙，请稍后再试', ResponseCode::ERROR);
     }
 
     /**
      * 获取附件列表
      * @param Request $request
      * @param AlbumFileRepo $albumFileRepo
-     * @return array
+     * @return \Illuminate\Http\JsonResponse
      */
     public function getFilePage(Request $request, AlbumFileRepo $albumFileRepo)
     {
         $ret = $albumFileRepo->getPage($request->all());
-        return ResultHelper::returnFormat('success', ResponseCode::SUCCESS, [
+        return $this->success([
             'pagination' => [
                 'total' => $ret['total'],
                 'page_size' => $ret['per_page'],
@@ -153,19 +181,28 @@ class Album extends Controller
     }
 
     /**
-     * 批量删除
+     * 批量删除图片
      * @param Request $request
      * @param AlbumFileRepo $albumFileRepo
-     * @return array
+     * @return array|\Illuminate\Http\JsonResponse
      */
-    public function deleteFile(Request $request,AlbumFileRepo $albumFileRepo){
+    public function deleteFile(Request $request, AlbumFileRepo $albumFileRepo)
+    {
         if (!$request->all()) {
-            return ResultHelper::returnFormat('文件不存在',ResponseCode::ERROR);
+            return $this->badSuccessRequest('文件不存在');
         }
-        if ($albumFileRepo->deleteByIds($request->all())) {
-            return ResultHelper::returnFormat('删除成功');
+        $albumFileRepo->transaction();
+        try {
+            if ($albumFileRepo->deleteByIds($request->all())) {
+                $albumFileRepo->commit();
+                return $this->successRequest('删除成功');
+            }
+            $albumFileRepo->rollBack();
+            return $this->badSuccessRequest('删除失败');
+        } catch (QueryException $exception) {
+            $albumFileRepo->rollBack();
+            return $this->badSuccessRequest($exception->getMessage());
         }
-        return ResultHelper::returnFormat('网络繁忙，请稍后再试...', ResponseCode::ERROR);
     }
 
 }

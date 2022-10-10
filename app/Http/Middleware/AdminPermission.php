@@ -3,11 +3,10 @@
 
 namespace App\Http\Middleware;
 
-use App\Http\ResponseCode;
 use App\Services\Repositories\Manage\Interfaces\IMenu;
 use Closure;
 use Illuminate\Support\Facades\Route;
-use JoyceZ\LaravelLib\Helpers\ResultHelper;
+use JoyceZ\LaravelLib\Traits\ApiResponse;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 /**
@@ -20,6 +19,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
  */
 class AdminPermission
 {
+    use ApiResponse;
 
     public function handle($request, Closure $next)
     {
@@ -36,7 +36,7 @@ class AdminPermission
             $routeAsName = Route::currentRouteName();
             //判断当前路由别名是否存在访问权限中
             if (!in_array($routeAsName, $power)) {
-                return response()->json(ResultHelper::returnFormat('无访问权限', ResponseCode::NO_REQUEST_PERMISSION), ResponseCode::NO_REQUEST_PERMISSION);
+                return $this->forbidden('无访问权限');
             }
         }
         return $next($request);
