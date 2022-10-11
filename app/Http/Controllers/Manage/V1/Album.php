@@ -125,18 +125,22 @@ class Album extends ApiController
      * 上传文件
      * @param Request $request
      * @param AlbumFileRepo $albumFileRepo
-     * @return array
+     * @return \Illuminate\Http\JsonResponse
      */
     public function upload(Request $request, AlbumFileRepo $albumFileRepo)
     {
-        return $albumFileRepo->doLocalUpload($request);
+        $ret = $albumFileRepo->doLocalUpload($request);
+        if ($ret['code'] == 200) {
+            return $this->success($ret['data'], '上传成功');
+        }
+        return $this->badSuccessRequest($ret['message']);
     }
 
     /**
      * 快捷修改指定表字段值
      * @param AlbumRequest $request
-     * @param AlbumFileRepo $albumFileRepo )
-     * @return array|mixed
+     * @param AlbumFileRepo $albumFileRepo
+     * @return \Illuminate\Http\JsonResponse
      */
     public function modifyFiled(AlbumRequest $request, AlbumFileRepo $albumFileRepo)
     {
