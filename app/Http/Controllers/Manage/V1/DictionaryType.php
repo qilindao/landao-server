@@ -50,10 +50,11 @@ class DictionaryType extends ApiController
 
         $dictTypeRepo->transaction();
         try {
-            if ($dictTypeRepo->create($data)) {
+            $dict = $dictTypeRepo->create($data);
+            if ($dict) {
                 $dictTypeRepo->clearCache();
                 $dictTypeRepo->commit();
-                return $this->successRequest('新增成功');
+                return $this->success($dict,'新增成功');
             }
             $dictTypeRepo->rollBack();
             return $this->badSuccessRequest('新增失败');

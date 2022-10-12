@@ -122,7 +122,6 @@ class Role extends ApiController
         }
         $role->role_name = FiltersHelper::filterXSS(trim($params['role_name']));
         $role->role_desc = FiltersHelper::filterXSS(trim($params['role_desc']));
-        dd($params);
         $roleRepo->transaction();
         try {
             if ($role->save()) {
