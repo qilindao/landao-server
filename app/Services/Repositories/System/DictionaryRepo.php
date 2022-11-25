@@ -35,7 +35,7 @@ class DictionaryRepo extends BaseRepository implements IDictionary
      */
     public function getAllDictByGroup(): array
     {
-        $dictionary = Cache::tags([GlobalCacheKeyEnum::ZODA_DICT_TAG])->get(GlobalCacheKeyEnum::ZODA_DICT_LIST_BY_GROUP);
+        $dictionary = Cache::tags([GlobalCacheKeyEnum::LD_DICT_TAG])->get(GlobalCacheKeyEnum::LD_DICT_LIST_BY_GROUP);
         if ($dictionary) {
             return $dictionary;
         }
@@ -48,7 +48,7 @@ class DictionaryRepo extends BaseRepository implements IDictionary
             $dict[$group[$item['type_id']]][] = $item;
         }
         if($dict){
-            Cache::tags([GlobalCacheKeyEnum::ZODA_DICT_TAG])->put(GlobalCacheKeyEnum::ZODA_DICT_LIST_BY_GROUP, $dict);
+            Cache::tags([GlobalCacheKeyEnum::LD_DICT_TAG])->put(GlobalCacheKeyEnum::LD_DICT_LIST_BY_GROUP, $dict);
         }
         return $dict;
     }
@@ -78,6 +78,6 @@ class DictionaryRepo extends BaseRepository implements IDictionary
      */
     public function clearCache()
     {
-        Cache::tags(GlobalCacheKeyEnum::ZODA_DICT_TAG)->flush();
+        Cache::tags(GlobalCacheKeyEnum::LD_DICT_TAG)->flush();
     }
 }

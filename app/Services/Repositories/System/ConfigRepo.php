@@ -57,7 +57,7 @@ class ConfigRepo extends BaseRepository implements IConfig
      */
     public function getConfigList(): array
     {
-        $configList = Cache::tags([GlobalCacheKeyEnum::ZODA_SYS_CONFIG_TAG_CACHE_KEY])->get(GlobalCacheKeyEnum::ZODA_SYS_CONFIG_LIST_CACHE_KEY);
+        $configList = Cache::tags([GlobalCacheKeyEnum::LD_SYS_CONFIG_TAG_CACHE_KEY])->get(GlobalCacheKeyEnum::LD_SYS_CONFIG_TAG_CACHE_KEY);
         if ($configList) {
             return $configList;
         }
@@ -67,7 +67,7 @@ class ConfigRepo extends BaseRepository implements IConfig
             $configList[$item['name']] = $item;
         }
         if ($configList) {
-            Cache::tags([GlobalCacheKeyEnum::ZODA_SYS_CONFIG_TAG_CACHE_KEY])->put(GlobalCacheKeyEnum::ZODA_SYS_CONFIG_LIST_CACHE_KEY, $configList);
+            Cache::tags([GlobalCacheKeyEnum::LD_SYS_CONFIG_TAG_CACHE_KEY])->put(GlobalCacheKeyEnum::LD_SYS_CONFIG_TAG_CACHE_KEY, $configList);
         }
         return $configList;
     }
@@ -115,7 +115,7 @@ class ConfigRepo extends BaseRepository implements IConfig
      */
     public function clearConfig()
     {
-        Cache::tags(GlobalCacheKeyEnum::ZODA_SYS_CONFIG_TAG_CACHE_KEY)->flush();
+        Cache::tags(GlobalCacheKeyEnum::LD_SYS_CONFIG_TAG_CACHE_KEY)->flush();
     }
 
 

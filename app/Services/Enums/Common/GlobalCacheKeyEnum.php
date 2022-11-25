@@ -15,18 +15,20 @@ use JoyceZ\LaravelLib\Enum\BaseEnum;
 class GlobalCacheKeyEnum extends BaseEnum
 {
 
-    const ZODA_DICT_GROUP_LISTS = 'zoda_dict_group_list';
-    const ZODA_DICT_TAG = "zoda_dict_tag";
-    const ZODA_SYS_CONFIG_TAG_CACHE_KEY = "zoda_config_tag";
-    const ZODA_SYS_CONFIG_LIST_CACHE_KEY = "zoda_config_list";
+    const LD_DICT_GROUP_LISTS = 'landao_dict_group_list';
+    const LD_DICT_TAG = "landao_dict_tag";
+    const LD_SYS_CONFIG_TAG_CACHE_KEY = "landao_config_tag";
+    const LD_SYS_CONFIG_LIST_CACHE_KEY = "landao_config_list";
+    const LD_DICT_LIST_BY_GROUP = 'landao_dict_list_by_group';
 
     public static function getMap(): array
     {
         return [
-            self::ZODA_DICT_TAG => '字典缓存标签',
-            self::ZODA_DICT_GROUP_LISTS => '字典分类',
-            self::ZODA_SYS_CONFIG_TAG_CACHE_KEY => '系统配置标签',
-            self::ZODA_SYS_CONFIG_LIST_CACHE_KEY => '所有系统配置',
+            self::LD_DICT_GROUP_LISTS => '字典缓存标签',
+            self::LD_DICT_TAG => '字典分类',
+            self::LD_SYS_CONFIG_TAG_CACHE_KEY => '系统配置标签',
+            self::LD_SYS_CONFIG_LIST_CACHE_KEY => '所有系统配置',
+            self::LD_DICT_LIST_BY_GROUP => '所有系统配置',
         ];
     }
 }

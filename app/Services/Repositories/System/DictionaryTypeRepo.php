@@ -34,15 +34,15 @@ class DictionaryTypeRepo extends BaseRepository implements IDictionaryType
      */
     public function lists(): array
     {
-        $list = Cache::tags([GlobalCacheKeyEnum::ZODA_DICT_TAG])->get(GlobalCacheKeyEnum::ZODA_DICT_GROUP_LISTS);
+        $list = Cache::tags([GlobalCacheKeyEnum::LD_DICT_TAG])->get(GlobalCacheKeyEnum::LD_DICT_GROUP_LISTS);
         if ($list) return $list;
         $list = $this->all(['dict_tid', 'type_key', 'type_name', 'expand'])->toArray();
-        if ($list) Cache::tags([GlobalCacheKeyEnum::ZODA_DICT_TAG])->put(GlobalCacheKeyEnum::ZODA_DICT_GROUP_LISTS, $list);
+        if ($list) Cache::tags([GlobalCacheKeyEnum::LD_DICT_TAG])->put(GlobalCacheKeyEnum::LD_DICT_GROUP_LISTS, $list);
         return $list;
     }
 
     public function clearCache(){
-        Cache::tags(GlobalCacheKeyEnum::ZODA_DICT_TAG)->flush();
+        Cache::tags(GlobalCacheKeyEnum::LD_DICT_TAG)->flush();
     }
 
 
