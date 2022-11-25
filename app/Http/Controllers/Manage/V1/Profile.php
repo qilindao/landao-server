@@ -9,8 +9,6 @@ use App\Http\Controllers\ApiController;
 use App\Http\Requests\Manage\ManageRequest;
 use App\Services\Repositories\Manage\ManageRepo;
 use App\Services\Repositories\Manage\MenuRepo;
-use App\Services\Repositories\School\SchoolGradeRepo;
-use App\Services\Repositories\System\ConfigRepo;
 use App\Services\Repositories\System\DictionaryRepo;
 use JoyceZ\LaravelLib\Helpers\FiltersHelper;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -26,12 +24,10 @@ class Profile extends ApiController
      * 获取个人信息
      * @param ManageRepo $manageRepo
      * @param DictionaryRepo $dictionaryRepo
-     * @param SchoolGradeRepo $gradeRepo
-     * @param ConfigRepo $configRepo
      * @return \Illuminate\Http\JsonResponse
      * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
-    public function index(ManageRepo $manageRepo, DictionaryRepo $dictionaryRepo, SchoolGradeRepo $gradeRepo, ConfigRepo $configRepo)
+    public function index(ManageRepo $manageRepo, DictionaryRepo $dictionaryRepo)
     {
         $user = JWTAuth::parseToken()->touser();
         $user->roles;
@@ -39,15 +35,9 @@ class Profile extends ApiController
         $manage = $manageRepo->parseDataRow($user->toArray());
         //字典
         $dictionary = $dictionaryRepo->getAllDictByGroup();
-        //年级
-        $schoolGrade = $gradeRepo->getListBySchoolType($dictionary['school_type']);
-        //运营区域
-        $operationArea = $configRepo->getConfigByName('operation_area');
         return $this->success([
             'userInfo' => $manage,
-            'dictionary' => $dictionary,
-            'schoolGrade' => $schoolGrade,
-            'operationArea' => $operationArea['content'],
+            'dictionary' => $dictionary
         ]);
     }
 
@@ -88,7 +78,7 @@ class Profile extends ApiController
         $menus = $menuRepo->parseDataRows($ret['menus']);
         $power = $ret['power'];
         $menuGroup = $ret['menuGroup'];
-        return $this->success( compact('menus', 'power', 'menuGroup'));
+        return $this->success(compact('menus', 'power', 'menuGroup'));
     }
 
 }
