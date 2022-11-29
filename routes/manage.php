@@ -84,3 +84,6 @@ Route::group([
 
     });
 });
+Route::fallback(function() {
+    return response()->json(['message' => 'Not Found!']);
+});
