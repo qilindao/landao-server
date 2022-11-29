@@ -7,6 +7,7 @@ namespace App\Services\Repositories\Manage;
 use App\Services\Models\Manage\RoleModel;
 use App\Services\Repositories\Manage\Interfaces\IRole;
 use App\Support\HashIdsSup;
+use Illuminate\Support\Arr;
 use JoyceZ\LaravelLib\Repositories\BaseRepository;
 
 /**
@@ -46,9 +47,14 @@ class RoleRepo extends BaseRepository implements IRole
                 $query->where('role_name', 'like', '%' . $params['search_text'] . '%');
             }
         })
+            ->with('menus:menu_id')
             ->orderBy($orderBy, $sort)
             ->paginate(isset($params['page_size']) ? $params['page_size'] : config('landao.paginate.page_size'));
-        return $lists->toArray();
+        $roles = $lists->toArray();
+        foreach ($roles['data'] as $key => $role) {
+            $roles['data'][$key]['menus'] = Arr::flatten($role['menus']);
+        }
+        return $roles;
     }
 
 
