@@ -4,7 +4,7 @@
 namespace App\Services\Models\Manage;
 
 
-use Illuminate\Database\Eloquent\Model;
+use App\Services\Models\BaseModel;
 
 /**
  * 前端菜单和按钮权限
@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * Class MenuModel
  * @package App\Services\Models\Manage
  */
-class MenuModel extends Model
+class MenuModel extends BaseModel
 {
     /**
      * 表名

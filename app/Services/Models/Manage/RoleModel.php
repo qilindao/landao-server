@@ -4,7 +4,7 @@
 namespace App\Services\Models\Manage;
 
 
-use Illuminate\Database\Eloquent\Model;
+use App\Services\Models\BaseModel;
 
 /**
  * 角色
@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * Class RoleModel
  * @package App\Services\Models\Manage
  */
-class RoleModel extends Model
+class RoleModel extends BaseModel
 {
     /**
      * 表名
@@ -57,7 +57,7 @@ class RoleModel extends Model
         'updated_at' => 'datetime:Y-m-d H:i:s',
     ];
 
-    protected $hidden=[
+    protected $hidden = [
         'pivot'
     ];
 

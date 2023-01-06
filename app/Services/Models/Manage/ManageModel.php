@@ -3,11 +3,13 @@
 
 namespace App\Services\Models\Manage;
 
-
+use App\Services\Casts\Common\Ip4ConverterIntCast;
+use DateTimeInterface;
 use App\Services\Enums\Common\YesOrNoEnum;
 use App\Services\Enums\Manage\ManageStatusEnum;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use JoyceZ\LaravelLib\Traits\EncryptTableDbAttribute;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
@@ -93,6 +95,9 @@ class ManageModel extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $casts = [
+        'reg_ip' => Ip4ConverterIntCast::class,//注册ip
+        'refresh_ip' => Ip4ConverterIntCast::class,//刷新ip
+        'last_login_ip' => Ip4ConverterIntCast::class,//最后登录ip地址
         'reg_date' => 'datetime:Y-m-d H:i:s',
         'updated_at' => 'datetime:Y-m-d H:i:s',
     ];
@@ -114,6 +119,11 @@ class ManageModel extends Authenticatable implements JWTSubject
         'phone','pwd_salt'
     ];
 
+    protected function serializeDate(DateTimeInterface $date)
+    {
+        return $date->format(Carbon::parse($date)->toDateTimeString());
+    }
+
     /**
      * 最后登录时间
      * @return false|string
@@ -132,32 +142,9 @@ class ManageModel extends Authenticatable implements JWTSubject
         return $this->attributes['refresh_time'] > 0 ? date('Y-m-d H:i:s', $this->attributes['refresh_time']) : '-';
     }
 
-    /**
-     * 注册ip地址
-     * @return string
-     */
-    public function getRegIpAttribute()
-    {
-        return $this->attributes['reg_ip'] > 0 ? long2ip($this->attributes['reg_ip']) : '-';
-    }
 
-    /**
-     * 最后刷新 token ip
-     * @return string
-     */
-    public function getRefreshIpAttribute()
-    {
-        return $this->attributes['refresh_ip'] > 0 ? long2ip($this->attributes['refresh_ip']) : '-';
-    }
 
-    /**
-     * 最后登录ip地址
-     * @return string
-     */
-    public function getLastLoginIpAttribute()
-    {
-        return $this->attributes['last_login_ip'] > 0 ? long2ip($this->attributes['last_login_ip']) : '-';
-    }
+
 
     /**
      * 管理员状态值说明

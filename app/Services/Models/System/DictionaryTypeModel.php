@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Services\Models\System;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Services\Models\BaseModel;
 
 /**
  * 数据字典分类
@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * Class DictionaryTypeModel
  * @package App\Services\Models\System;
  */
-class DictionaryTypeModel extends Model
+class DictionaryTypeModel extends BaseModel
 {
     /**
      * 表名

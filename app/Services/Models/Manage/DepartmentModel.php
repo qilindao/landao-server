@@ -4,7 +4,7 @@
 namespace App\Services\Models\Manage;
 
 
-use Illuminate\Database\Eloquent\Model;
+use App\Services\Models\BaseModel;
 
 /**
  * 部门
@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * Class DepartmentModel
  * @package App\Services\Models\Manage
  */
-class DepartmentModel extends Model
+class DepartmentModel extends BaseModel
 {
     /**
      * 表名

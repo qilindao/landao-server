@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Services\Models\System;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Services\Models\BaseModel;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Storage;
  * Class AlbumFileModel
  * @package App\Services\Models\System;
  */
-class AlbumFileModel extends Model
+class AlbumFileModel extends BaseModel
 {
     /**
      * 表名

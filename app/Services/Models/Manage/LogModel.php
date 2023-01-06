@@ -4,7 +4,7 @@
 namespace App\Services\Models\Manage;
 
 
-use Illuminate\Database\Eloquent\Model;
+use App\Services\Models\BaseModel;
 
 /***
  * 管理员操作日志
@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * Class LogModel
  * @package App\Services\Models\Manage
  */
-class LogModel extends Model
+class LogModel extends BaseModel
 {
 
     /**
