@@ -38,7 +38,7 @@ class CreateSysManageTable extends Migration
         });
         //表注释
         \Illuminate\Support\Facades\DB::statement("ALTER TABLE `sys_manage` comment '系统管理员'");
-        \Illuminate\Support\Facades\DB::statement("ALTER TABLE `sys_manage` AUTO_INCREMENT=10001");
+        \Illuminate\Support\Facades\DB::statement("ALTER TABLE `sys_manage` AUTO_INCREMENT=1001");
     }
 
     /**

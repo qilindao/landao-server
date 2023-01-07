@@ -26,7 +26,7 @@ class CreateSysManageRoleTable extends Migration
         });
         //表注释
         \Illuminate\Support\Facades\DB::statement("ALTER TABLE `sys_manage_role` comment '管理员角色'");
-        \Illuminate\Support\Facades\DB::statement("ALTER TABLE `sys_manage_role` AUTO_INCREMENT=10001");
+        \Illuminate\Support\Facades\DB::statement("ALTER TABLE `sys_manage_role` AUTO_INCREMENT=1001");
     }
 
     /**

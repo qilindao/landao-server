@@ -25,7 +25,7 @@ class CreateSysDictionaryTypeTable extends Migration
         });
         //表注释
         \Illuminate\Support\Facades\DB::statement("ALTER TABLE `sys_dictionary_type` comment '字典类型'");
-        \Illuminate\Support\Facades\DB::statement("ALTER TABLE `sys_dictionary_type` AUTO_INCREMENT=10001");
+        \Illuminate\Support\Facades\DB::statement("ALTER TABLE `sys_dictionary_type` AUTO_INCREMENT=1001");
     }
 
     /**

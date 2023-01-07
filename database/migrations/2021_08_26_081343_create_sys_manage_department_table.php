@@ -24,7 +24,7 @@ class CreateSysManageDepartmentTable extends Migration
         });
         //表注释
         \Illuminate\Support\Facades\DB::statement("ALTER TABLE `sys_manage_department` comment '部门管理'");
-        \Illuminate\Support\Facades\DB::statement("ALTER TABLE `sys_manage_department` AUTO_INCREMENT=10001");
+        \Illuminate\Support\Facades\DB::statement("ALTER TABLE `sys_manage_department` AUTO_INCREMENT=1001");
     }
 
     /**

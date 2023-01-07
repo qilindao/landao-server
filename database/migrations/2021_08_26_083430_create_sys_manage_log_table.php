@@ -29,7 +29,7 @@ class CreateSysManageLogTable extends Migration
         });
         //表注释
         \Illuminate\Support\Facades\DB::statement("ALTER TABLE `sys_manage_log` comment '操作日志'");
-        \Illuminate\Support\Facades\DB::statement("ALTER TABLE `sys_manage_log` AUTO_INCREMENT=10001");
+        \Illuminate\Support\Facades\DB::statement("ALTER TABLE `sys_manage_log` AUTO_INCREMENT=1001");
     }
 
     /**
