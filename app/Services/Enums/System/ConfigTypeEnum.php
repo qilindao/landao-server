@@ -17,14 +17,16 @@ class ConfigTypeEnum extends BaseEnum
     const CONFIG_FORM_ITEM_TEXTAREA = 'textarea';
     const CONFIG_FORM_ITEM_REGION = 'region';
     const CONFIG_FORM_ITEM_ARRAY = 'array';
+    const CONFIG_FORM_ITEM_EDITOR = 'editor';
 
     public static function getMap(): array
     {
         return [
-            self::CONFIG_FORM_ITEM_STRING=>'文本框',
-            self::CONFIG_FORM_ITEM_TEXTAREA=>'多行文本框',
-            self::CONFIG_FORM_ITEM_REGION=>'国内行政区域',
-            self::CONFIG_FORM_ITEM_ARRAY=>'数组',
+            self::CONFIG_FORM_ITEM_STRING => '文本框',
+            self::CONFIG_FORM_ITEM_TEXTAREA => '多行文本框',
+            self::CONFIG_FORM_ITEM_REGION => '国内行政区域',
+            self::CONFIG_FORM_ITEM_ARRAY => '数组',
+            self::CONFIG_FORM_ITEM_EDITOR => '富文本',
         ];
     }
 
