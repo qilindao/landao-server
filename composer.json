@@ -8,7 +8,7 @@
         "php": "^7.3",
         "guzzlehttp/guzzle": "^7.0.1",
         "joycezhang/laravellib": "^2.3",
-        "laravel/framework": "^8.54",
+        "laravel/framework": "^8.83",
         "laravel/tinker": "^2.5",
         "tymon/jwt-auth": "^1.0",
         "vinkla/hashids": "^9.1"
