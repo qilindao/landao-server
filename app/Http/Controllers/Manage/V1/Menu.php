@@ -59,18 +59,22 @@ class Menu extends ApiController
         return $this->success($menuRepo->parseDataRow($menu->toArray()));
     }
 
-
     /**
      * 新增菜单
      * @param MenuRequest $request
      * @param MenuRepo $menuRepo
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     * @throws \JoyceZ\LaravelLib\Exceptions\RepositoryException
      */
     public function store(MenuRequest $request, MenuRepo $menuRepo)
     {
         $params = $request->all();
         $params['parent_id'] = trim((string)$params['parent_id']) == '' ? 0 : $params['parent_id'];
-
+        $menu = $menuRepo->existsWhere(['menu_name' => $params['menu_name']]);
+        if ($menu) {
+            return $this->badSuccessRequest('节点路由名已存在');
+        }
         $menuRepo->transaction();
         try {
             if ($menuRepo->create($params)) {
