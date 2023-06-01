@@ -3,7 +3,7 @@ declare (strict_types=1);
 
 namespace App\Http\Middleware;
 
-use App\Services\Repositories\Manage\Interfaces\ILog;
+use App\Services\Repositories\Manage\LogRepo;
 use Closure;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Exceptions\JWTException;
@@ -41,7 +41,7 @@ class ManageLog
             'newpassword',
             'newpassword_confirm',
         ]);
-        $manageLogRepo = app(ILog::class);
+        $manageLogRepo = app(LogRepo::class);
         $manageLogRepo->record([
             'manage_id' => $manageInfo['manage_id'] ?? 0,
             'manage_username' => $manageInfo['username'] ?? '',

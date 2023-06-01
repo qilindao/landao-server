@@ -25,16 +25,12 @@ class RepositoryServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //平台管理员
-        if (class_exists(\App\Services\Repositories\Manage\Providers\RepositoryServiceProvider::class)) {
-            $this->app->register(\App\Services\Repositories\Manage\Providers\RepositoryServiceProvider::class);
-        }
         /**
          * 绑定图形验证码
          */
         $this->app->bind(CaptchaContract::class, function () {
             $captcha = new Captcha();
-            $config = collect(config('laraveladmin.captcha'))->filter(function ($value) {
+            $config = collect(config('landao.captcha'))->filter(function ($value) {
                 return !empty($value);
             })->toArray();
             $captcha->withConfig($config);

@@ -3,7 +3,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Services\Repositories\Manage\Interfaces\IMenu;
+use App\Services\Repositories\Manage\MenuRepo;
 use Closure;
 use Illuminate\Support\Facades\Route;
 use JoyceZ\LaravelLib\Traits\ApiResponse;
@@ -30,7 +30,7 @@ class AdminPermission
             foreach ($user->roles as $item) {
                 $roleIds[] = $item['role_id'];
             }
-            $menuRepo = app(IMenu::class);
+            $menuRepo = app(MenuRepo::class);
             $ret = $menuRepo->generatePermission($roleIds, (boolean)$user->is_super);
             $power = $ret['power'];
             $routeAsName = Route::currentRouteName();
