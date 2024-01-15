@@ -3,6 +3,7 @@
 namespace App\Http;
 
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
+use JoyceZ\LaravelLib\Middleware\ApiCaseConverter;
 
 class Kernel extends HttpKernel
 {
@@ -62,9 +63,10 @@ class Kernel extends HttpKernel
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        'hashids' => \App\Http\Middleware\HashIds::class,//ids 解码
+//        'hashids' => \App\Http\Middleware\HashIds::class,//ids 解码  vinkla/hashids
         'manage.log' => \App\Http\Middleware\ManageLog::class,//后台操作日志
         'rbac.admin.permissiion' => \App\Http\Middleware\AdminPermission::class,//后端请求权限验证
         'jwt.role' => \App\Http\Middleware\JWTRoleAuth::class,//多表jwt校验
+        'api.case.converter' => ApiCaseConverter::class,//请求和响应驼峰下划线互转
     ];
 }
