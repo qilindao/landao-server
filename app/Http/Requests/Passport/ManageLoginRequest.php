@@ -20,8 +20,8 @@ class ManageLoginRequest extends BaseRequest
         return [
             'username' => 'required',
             'password' => 'required|min:8',
-            'captcha' => 'required|size:4',
-            'captcha_uniqid'=>'required'
+            'verify_code' => 'required|size:4',
+            'captcha_uniq_id'=>'required'
         ];
     }
 
@@ -36,9 +36,9 @@ class ManageLoginRequest extends BaseRequest
             'username.required' => '账号不能为空',
             'password.required' => '密码不能为空',
             'password.min' => '密码最少要输入8个字符',
-            'captcha.required' => '验证码不能为空',
-            'captcha.size' => '验证码位数错误',
-            'captcha_uniqid.required' => '非法操作验证码',
+            'verify_code.required' => '验证码不能为空',
+            'verify_code.size' => '验证码位数错误',
+            'captcha_uniq_id.required' => '非法操作验证码',
         ];
     }
 }

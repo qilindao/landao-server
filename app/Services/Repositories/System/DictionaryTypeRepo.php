@@ -6,7 +6,6 @@ namespace App\Services\Repositories\System;
 use App\Services\Enums\Common\GlobalCacheKeyEnum;
 use Illuminate\Support\Facades\Cache;
 use JoyceZ\LaravelLib\Repositories\BaseRepository;
-use App\Services\Repositories\System\Interfaces\IDictionaryType;
 use App\Services\Models\System\DictionaryTypeModel;
 
 /**
@@ -17,7 +16,7 @@ use App\Services\Models\System\DictionaryTypeModel;
  * Class DictionaryTypeRepo
  * @package App\Services\Repositories\System;
  */
-class DictionaryTypeRepo extends BaseRepository implements IDictionaryType
+class DictionaryTypeRepo extends BaseRepository
 {
 
     /**

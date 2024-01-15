@@ -7,7 +7,6 @@ use App\Services\Casts\System\ConfigValueCast;
 use App\Services\Enums\Common\GlobalCacheKeyEnum;
 use Illuminate\Support\Facades\Cache;
 use JoyceZ\LaravelLib\Repositories\BaseRepository;
-use App\Services\Repositories\System\Interfaces\IConfig;
 use App\Services\Models\System\ConfigModel;
 
 /**
@@ -18,7 +17,7 @@ use App\Services\Models\System\ConfigModel;
  * Class ConfigRepo
  * @package App\Services\Repositories\System;
  */
-class ConfigRepo extends BaseRepository implements IConfig
+class ConfigRepo extends BaseRepository
 {
 
     /**

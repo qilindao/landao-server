@@ -6,7 +6,6 @@ namespace App\Services\Repositories\System;
 use Illuminate\Support\Facades\File;
 use JoyceZ\LaravelLib\Helpers\TreeHelper;
 use JoyceZ\LaravelLib\Repositories\BaseRepository;
-use App\Services\Repositories\System\Interfaces\IRegion;
 use App\Services\Models\System\RegionModel;
 
 /**
@@ -17,7 +16,7 @@ use App\Services\Models\System\RegionModel;
  * Class RegionRepo
  * @package App\Services\Repositories\System;
  */
-class RegionRepo extends BaseRepository implements IRegion
+class RegionRepo extends BaseRepository
 {
 
     /**

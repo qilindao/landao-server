@@ -8,8 +8,10 @@ namespace App\Http\Controllers\Manage\V1;
 use App\Http\Controllers\ApiController;
 use App\Http\Requests\Manage\ManageRequest;
 use App\Services\Repositories\Manage\ManageRepo;
-use App\Services\Repositories\Manage\MenuRepo;
+use App\Services\Repositories\Manage\RoleRepo;
 use App\Services\Repositories\System\DictionaryRepo;
+use App\Services\Repositories\System\MenuRepo;
+use JoyceZ\LaravelLib\Helpers\CamelHelper;
 use JoyceZ\LaravelLib\Helpers\FiltersHelper;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -22,21 +24,19 @@ class Profile extends ApiController
 {
     /**
      * 获取个人信息
-     * @param ManageRepo $manageRepo
      * @param DictionaryRepo $dictionaryRepo
      * @return \Illuminate\Http\JsonResponse
      * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
-    public function index(ManageRepo $manageRepo, DictionaryRepo $dictionaryRepo)
+    public function index(DictionaryRepo $dictionaryRepo)
     {
         $user = JWTAuth::parseToken()->touser();
         $user->roles;
         $user->department;
-        $manage = $manageRepo->parseDataRow($user->toArray());
         //字典
         $dictionary = $dictionaryRepo->getAllDictByGroup();
         return $this->success([
-            'userInfo' => $manage,
+            'userInfo' =>$user->toArray(),
             'dictionary' => $dictionary
         ]);
     }
@@ -64,21 +64,15 @@ class Profile extends ApiController
 
     /**
      * 获取用户权限菜单和权限按钮
-     * @param MenuRepo $menuRepo
+     * @param RoleRepo $roleRepo
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
-    public function rules(MenuRepo $menuRepo)
+    public function rules(RoleRepo $roleRepo)
     {
         $user = JWTAuth::parseToken()->touser();
-        $roleIds = [];
-        foreach ($user->roles as $item) {
-            $roleIds[] = $item['role_id'];
-        }
-        $ret = $menuRepo->generatePermission($roleIds, (boolean)$user->is_super);
-        $menus = $menuRepo->parseDataRows($ret['menus']);
-        $power = $ret['power'];
-        $menuGroup = $ret['menuGroup'];
-        return $this->success(compact('menus', 'power', 'menuGroup'));
+        $ret = $roleRepo->getRoleMenuByRoleIds($user);
+        return $this->success($ret);
     }
 
 }

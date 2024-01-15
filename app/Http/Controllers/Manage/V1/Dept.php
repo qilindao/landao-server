@@ -7,6 +7,8 @@ namespace App\Http\Controllers\Manage\V1;
 use App\Http\Controllers\ApiController;
 use App\Http\Requests\Manage\DeptRequest;
 use App\Services\Repositories\Manage\DepartmentRepo;
+use App\Services\Repositories\Manage\RoleRepo;
+use App\Services\Repositories\System\MenuRepo;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use JoyceZ\LaravelLib\Helpers\FiltersHelper;
@@ -55,6 +57,8 @@ class Dept extends ApiController
      * @param DeptRequest $request
      * @param DepartmentRepo $departmentRepo
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     * @throws \JoyceZ\LaravelLib\Exceptions\RepositoryException
      */
     public function store(DeptRequest $request, DepartmentRepo $departmentRepo)
     {
@@ -128,12 +132,42 @@ class Dept extends ApiController
         try {
             if ($dept->delete()) {
                 $departmentRepo->commit();
-                return $this->successRequest( '删除成功');
+                return $this->successRequest('删除成功');
             }
             $departmentRepo->rollBack();
             return $this->badSuccessRequest('删除失败');
         } catch (QueryException $exception) {
             $departmentRepo->rollBack();
+            return $this->badSuccessRequest($exception->getMessage());
+        }
+    }
+
+    /**
+     * 快捷修改指定表字段值
+     * @param Request $request
+     * @param int $deptId
+     * @param DepartmentRepo $deptRepo
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     * @throws \JoyceZ\LaravelLib\Exceptions\RepositoryException
+     */
+    public function modifyFiled(Request $request, int $deptId, DepartmentRepo $deptRepo)
+    {
+        if ($deptId <= 0) {
+            return $this->badSuccessRequest('缺少必要的参数');
+        }
+        $fieldName = (string)$request->post('field_name');
+        $fieldValue = $request->post('field_value');
+        $deptRepo->transaction();
+        try {
+            if ($deptRepo->updateFieldById($deptId, $fieldName, $fieldValue)) {
+                $deptRepo->commit();
+                return $this->successRequest('更新成功');
+            }
+            $deptRepo->rollBack();
+            return $this->badSuccessRequest('更新失败');
+        } catch (QueryException $exception) {
+            $deptRepo->rollBack();
             return $this->badSuccessRequest($exception->getMessage());
         }
     }

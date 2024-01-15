@@ -13,12 +13,22 @@ use Illuminate\Http\Request;
 use JoyceZ\LaravelLib\Helpers\FiltersHelper;
 use JoyceZ\LaravelLib\Helpers\TreeHelper;
 
+/**
+ * Class Album
+ * @author ZhangWei
+ * @copyright 2019-2029 https://github.com/Joycezhangw, 保留所有权利。
+ * @inheritDoc https://qilindao.github.io/docs/
+ * @package App\Http\Controllers\Manage\V1
+ */
 class Album extends ApiController
 {
+
     /**
      * 相册分类
      * @param AlbumRepo $albumRepo
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     * @throws \JoyceZ\LaravelLib\Exceptions\RepositoryException
      */
     public function category(AlbumRepo $albumRepo)
     {
@@ -34,6 +44,8 @@ class Album extends ApiController
      * @param AlbumRequest $request
      * @param AlbumRepo $albumRepo
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     * @throws \JoyceZ\LaravelLib\Exceptions\RepositoryException
      */
     public function store(AlbumRequest $request, AlbumRepo $albumRepo)
     {
@@ -95,6 +107,8 @@ class Album extends ApiController
      * @param AlbumRepo $albumRepo
      * @param AlbumFileRepo $albumFileRepo
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     * @throws \JoyceZ\LaravelLib\Exceptions\RepositoryException
      */
     public function destroy(int $id, AlbumRepo $albumRepo, AlbumFileRepo $albumFileRepo)
     {
@@ -141,6 +155,8 @@ class Album extends ApiController
      * @param AlbumRequest $request
      * @param AlbumFileRepo $albumFileRepo
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     * @throws \JoyceZ\LaravelLib\Exceptions\RepositoryException
      */
     public function modifyFiled(AlbumRequest $request, AlbumFileRepo $albumFileRepo)
     {

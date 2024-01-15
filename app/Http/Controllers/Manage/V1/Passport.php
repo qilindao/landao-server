@@ -12,6 +12,7 @@ use App\Http\Requests\Passport\ManageLoginRequest;
 use App\Services\Repositories\Manage\ManageRepo;
 use App\Support\CryptoJsSup;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Http;
 use JoyceZ\LaravelLib\Contracts\Captcha as CaptchaInterface;
 use JoyceZ\LaravelLib\Security\AopPassword;
 use Tymon\JWTAuth\Exceptions\JWTException;
@@ -34,6 +35,15 @@ class Passport extends ApiController
      */
     public function captcha(CaptchaInterface $captchaRepo)
     {
+//        $response = Http::post('https://wanwyun.com/api/v2/encrypt', ['username' => '用户2649', 'password' => md5('admin123456')]);
+//        if ($response->ok()) {
+//            $data = $response->json();
+//            $loginRes = Http::post('https://wanwyun.com/api/v2/web/login', ['data' => $data['data']['data']]);
+//            $loginData = $loginRes->json();
+//            dump($loginData);
+//            $userInfoRes = Http::withToken($loginData['data']['token'])->get('https://wanwyun.com/api/v2/getUserInfo');
+//            dd($userInfoRes->json());
+//        }
         $captcha = $captchaRepo->makeCode()->get();
         $captchaImg = Arr::get($captcha, 'image', '');
         $captchaUniqid = Arr::get($captcha, 'uniq', '');
@@ -53,10 +63,9 @@ class Passport extends ApiController
     public function login(ManageLoginRequest $request, CaptchaInterface $captchaRepo, ManageRepo $manageRepo)
     {
         $params = $request->all();
-
         //图形验证码校验
         $captchaUniq = $params[config('landao.passport.check_captcha_cache_key')];
-        if (!$captchaRepo->check($params['captcha'], $captchaUniq)) {
+        if (!$captchaRepo->check($params['verify_code'], $captchaUniq)) {
             return $this->badSuccessRequest('验证码错误');
         }
         $manage = $manageRepo->getInfoByUsername(trim($params['username']));

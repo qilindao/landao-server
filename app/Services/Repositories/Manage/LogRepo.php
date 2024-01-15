@@ -5,8 +5,6 @@ namespace App\Services\Repositories\Manage;
 
 
 use App\Services\Models\Manage\LogModel;
-use App\Services\Repositories\Manage\Interfaces\ILog;
-use App\Support\HashIdsSup;
 use JoyceZ\LaravelLib\Helpers\StrHelper;
 use JoyceZ\LaravelLib\Repositories\BaseRepository;
 
@@ -15,23 +13,12 @@ use JoyceZ\LaravelLib\Repositories\BaseRepository;
  * Class LogRepo
  * @package App\Services\Repositories\Manage
  */
-class LogRepo extends BaseRepository implements ILog
+class LogRepo extends BaseRepository
 {
 
     public function model()
     {
         return LogModel::class;
-    }
-
-
-    /**
-     * 解析数据
-     * @param array $row
-     * @return array
-     */
-    public function parseDataRow(array $row): array
-    {
-        return (new HashIdsSup())->encode($row);
     }
 
     /**

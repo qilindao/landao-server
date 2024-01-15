@@ -6,10 +6,10 @@ namespace App\Http\Controllers\Manage\V1;
 
 use App\Http\Controllers\ApiController;
 use App\Http\Requests\Manage\MenuRequest;
-use App\Services\Repositories\Manage\MenuRepo;
+use App\Services\Enums\System\MenuTypeEnum;
+use App\Services\Repositories\System\MenuRepo;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 /**
  * 菜单
@@ -20,10 +20,16 @@ use Illuminate\Support\Str;
  */
 class Menu extends ApiController
 {
-    public function index(Request $request, MenuRepo $menuRepo)
+
+    /**
+     * 菜单列表
+     * @param MenuRepo $menuRepo
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function index(MenuRepo $menuRepo)
     {
-        $menuList = $menuRepo->getAllList($request->all());
-        return $this->success($menuRepo->parseDataRows($menuList));
+        $menuList = $menuRepo->lists();
+        return $this->success($menuList);
     }
 
     /**
@@ -35,9 +41,9 @@ class Menu extends ApiController
         $routes = app()->routes->getRoutes();
         $arrRoute = [];
         foreach ($routes as $route) {
-            if (isset($route->action['as'])) {
-                if (Str::is('manage.*', $route->action['as'])) {
-                    $arrRoute[] = $route->action['as'];
+            if (isset($route->action['as']) && isset($route->action['name'])) {
+                if ($route->action['name'] == 'manage.') {
+                    $arrRoute[] = $route->action['name'] . $route->action['as'];
                 }
             }
         }
@@ -71,12 +77,14 @@ class Menu extends ApiController
     {
         $params = $request->all();
         $params['parent_id'] = trim((string)$params['parent_id']) == '' ? 0 : $params['parent_id'];
-        $menu = $menuRepo->existsWhere(['menu_name' => $params['menu_name']]);
+        $menu = $menuRepo->existsWhere(['name' => $params['name']]);
         if ($menu) {
             return $this->badSuccessRequest('节点路由名已存在');
         }
         $menuRepo->transaction();
         try {
+            $params['component'] = $params['type'] == MenuTypeEnum::MENU_TYPE_BUTTON ? "" : $params['component'];
+            $params['keep_alive'] = $params['type'] == MenuTypeEnum::MENU_TYPE_BUTTON ? false : $params['keep_alive'];
             if ($menuRepo->create($params)) {
                 $menuRepo->commit();
                 return $this->successRequest('新增成功');
@@ -95,12 +103,17 @@ class Menu extends ApiController
      * @param MenuRequest $request
      * @param MenuRepo $menuRepo
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     * @throws \JoyceZ\LaravelLib\Exceptions\RepositoryException
      */
     public function update(int $menuId, MenuRequest $request, MenuRepo $menuRepo)
     {
         $menuRepo->transaction();
         try {
-            if ($menuRepo->updateById($request->all(), $menuId)) {
+            $params = $request->all();
+            $params['component'] = $params['type'] == MenuTypeEnum::MENU_TYPE_BUTTON ? "" : $params['component'];
+            $params['keep_alive'] = $params['type'] == MenuTypeEnum::MENU_TYPE_BUTTON ? false : $params['keep_alive'];
+            if ($menuRepo->updateById($params, $menuId)) {
                 $menuRepo->commit();
                 return $this->successRequest('更新成功');
             }
@@ -130,6 +143,36 @@ class Menu extends ApiController
                 $menu->roles()->detach($menuId);
                 $menuRepo->commit();
                 return $this->successRequest('删除成功');
+            }
+            $menuRepo->rollBack();
+            return $this->badSuccessRequest('更新失败');
+        } catch (QueryException $exception) {
+            $menuRepo->rollBack();
+            return $this->badSuccessRequest($exception->getMessage());
+        }
+    }
+
+    /**
+     * 快捷修改指定表字段值
+     * @param Request $request
+     * @param int $menuId
+     * @param MenuRepo $menuRepo
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     * @throws \JoyceZ\LaravelLib\Exceptions\RepositoryException
+     */
+    public function modifyFiled(Request $request,int $menuId, MenuRepo $menuRepo)
+    {
+        if ($menuId <= 0) {
+            return $this->badSuccessRequest('缺少必要的参数');
+        }
+        $fieldName = (string)$request->post('field_name');
+        $fieldValue = $request->post('field_value');
+        $menuRepo->transaction();
+        try {
+            if ($menuRepo->updateFieldById($menuId, $fieldName, $fieldValue)) {
+                $menuRepo->commit();
+                return $this->successRequest('更新成功');
             }
             $menuRepo->rollBack();
             return $this->badSuccessRequest('更新失败');

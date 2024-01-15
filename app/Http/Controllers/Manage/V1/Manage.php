@@ -29,6 +29,7 @@ class Manage extends ApiController
      * 列表
      * @param Request $request
      * @param ManageRepo $manageRepo
+     * @return \Illuminate\Http\JsonResponse
      */
     public function index(Request $request, ManageRepo $manageRepo)
     {
@@ -62,11 +63,14 @@ class Manage extends ApiController
         return $this->success($manageRepo->parseDataRow($manage->toArray()));
     }
 
+
     /**
      * 创建管理员
      * @param ManageRequest $request
      * @param ManageRepo $manageRepo
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     * @throws \JoyceZ\LaravelLib\Exceptions\RepositoryException
      */
     public function store(ManageRequest $request, ManageRepo $manageRepo)
     {
@@ -98,7 +102,7 @@ class Manage extends ApiController
             if ($manage) {
                 if ($params['roles']) {
                     //对数据进行解密
-                    $ids = $params['roles'];//(new HashIdsSup())->decodeArray($params['roles']);
+                    $ids = $params['roles'];
                     $manage->roles()->sync(array_filter(array_unique($ids)));
                 }
                 $manageRepo->commit();
@@ -118,6 +122,8 @@ class Manage extends ApiController
      * @param ManageRequest $request
      * @param ManageRepo $manageRepo
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     * @throws \JoyceZ\LaravelLib\Exceptions\RepositoryException
      */
     public function update(int $manageId, ManageRequest $request, ManageRepo $manageRepo)
     {
@@ -145,7 +151,7 @@ class Manage extends ApiController
             if ($manage->save()) {
                 if ($params['roles']) {
                     //对数据进行解密
-                    $ids = $params['roles'];//(new HashIdsSup())->decodeArray($params['roles']);
+                    $ids = $params['roles'];
                     $manage->roles()->sync(array_filter(array_unique($ids)));
                 }
                 $manageRepo->commit();

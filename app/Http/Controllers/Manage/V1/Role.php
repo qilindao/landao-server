@@ -43,6 +43,8 @@ class Role extends ApiController
      * 获取全部角色
      * @param RoleRepo $roleRepo
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     * @throws \JoyceZ\LaravelLib\Exceptions\RepositoryException
      */
     public function lists(RoleRepo $roleRepo)
     {
@@ -67,7 +69,6 @@ class Role extends ApiController
             $menuIds[] = $item['menu_id'];
         }
         $roleData = $role->toArray();
-//        $roleData['menus'] = $menuIds ? (new HashIdsSup())->encodeArray($menuIds) : [];
         return $this->success($roleRepo->parseDataRow($roleData));
     }
 
@@ -76,6 +77,8 @@ class Role extends ApiController
      * @param RoleRequest $request
      * @param RoleRepo $roleRepo
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     * @throws \JoyceZ\LaravelLib\Exceptions\RepositoryException
      */
     public function store(RoleRequest $request, RoleRepo $roleRepo)
     {
@@ -90,7 +93,6 @@ class Role extends ApiController
             if ($role) {
                 if ($params['menus']) {
                     //对数据进行解密
-//                $ids = (new HashIdsSup())->decodeArray($params['menus']);
                     $ids = $params['menus'];
                     $role->menus()->sync(array_filter(array_unique($ids)));
                 }
@@ -127,7 +129,7 @@ class Role extends ApiController
             if ($role->save()) {
                 if ($params['menus']) {
                     //对数据进行解密
-                    $ids = $params['menus'];//(new HashIdsSup())->decodeArray($params['menus']);
+                    $ids = $params['menus'];
                     $role->menus()->sync(array_filter(array_unique($ids)));
                 }
                 $roleRepo->commit();
@@ -171,20 +173,22 @@ class Role extends ApiController
     /**
      * 快捷修改指定表字段值
      * @param Request $request
+     * @param int $roleId
      * @param RoleRepo $roleRepo
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     * @throws \JoyceZ\LaravelLib\Exceptions\RepositoryException
      */
-    public function modifyFiled(Request $request, RoleRepo $roleRepo)
+    public function modifyFiled(Request $request, int $roleId, RoleRepo $roleRepo)
     {
-        $id = intval($request->post('role_id'));
-        if ($id <= 0) {
+        if ($roleId <= 0) {
             return $this->badSuccessRequest('缺少必要的参数');
         }
         $fieldName = (string)$request->post('field_name');
         $fieldValue = $request->post('field_value');
         $roleRepo->transaction();
         try {
-            if ($roleRepo->updateFieldById($id, $fieldName, $fieldValue)) {
+            if ($roleRepo->updateFieldById($roleId, $fieldName, $fieldValue)) {
                 $roleRepo->commit();
                 return $this->successRequest('更新成功');
             }

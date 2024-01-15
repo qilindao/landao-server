@@ -5,8 +5,6 @@ namespace App\Services\Repositories\Manage;
 
 
 use App\Services\Models\Manage\DepartmentModel;
-use App\Services\Repositories\Manage\Interfaces\IDepartment;
-use App\Support\HashIdsSup;
 use JoyceZ\LaravelLib\Repositories\BaseRepository;
 
 /**
@@ -18,7 +16,7 @@ use JoyceZ\LaravelLib\Repositories\BaseRepository;
  *
  * @package App\Services\Repositories\Manage
  */
-class DepartmentRepo extends BaseRepository implements IDepartment
+class DepartmentRepo extends BaseRepository
 {
 
     public function model()
@@ -26,16 +24,6 @@ class DepartmentRepo extends BaseRepository implements IDepartment
         return DepartmentModel::class;
     }
 
-
-    /**
-     * 解析菜单数据
-     * @param array $row
-     * @return array
-     */
-    public function parseDataRow(array $row): array
-    {
-        return (new HashIdsSup())->encode($row);
-    }
 
     /***
      * 部门列表

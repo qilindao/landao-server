@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace App\Services\Models\System;
 
+
+
 use App\Services\Models\BaseModel;
 
 /**

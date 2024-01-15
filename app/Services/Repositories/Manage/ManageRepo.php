@@ -6,10 +6,6 @@ namespace App\Services\Repositories\Manage;
 
 use App\Services\Enums\Manage\ManageStatusEnum;
 use App\Services\Models\Manage\ManageModel;
-use App\Services\Repositories\Manage\Interfaces\IManage;
-use App\Support\HashIdsSup;
-use Illuminate\Support\Facades\DB;
-use JoyceZ\LaravelLib\Helpers\FiltersHelper;
 use JoyceZ\LaravelLib\Repositories\BaseRepository;
 
 /**
@@ -20,7 +16,7 @@ use JoyceZ\LaravelLib\Repositories\BaseRepository;
  * Class ManageRepo
  * @package App\Services\Repositories\Manage
  */
-class ManageRepo extends BaseRepository implements IManage
+class ManageRepo extends BaseRepository
 {
     public function model()
     {
@@ -32,27 +28,17 @@ class ManageRepo extends BaseRepository implements IManage
      * @param array $row
      * @return array
      */
-    public function parseDataRow(array $row): array
-    {
-        //解析管理员关联角色数据
-        if (isset($row['roles']) && is_array($row['roles']) && count($row['roles']) > 0) {
-            foreach ($row['roles'] as $key => $item) {
-                $row['roles'][$key] = (new HashIdsSup())->encode($item);
-            }
-        }
-        //解析管理员关联部门信息
-        if (isset($row['department']) && is_array($row['department'])) {
-            $row['department'] = (new HashIdsSup())->encode($row['department']);
-        }
+    // public function parseDataRow(array $row): array
+    // {
         //手机号脱敏
 //        if (isset($row['phone'])) {
 //            $row['phone'] = FiltersHelper::dataDesensitization($row['phone'], 3, 4);
 //        }
-        if (isset($row['manage_status'])) {
-            $row['manage_status_txt'] = ManageStatusEnum::getValue($row['manage_status']);
-        }
-        return (new HashIdsSup())->encode($row);
-    }
+    //     if (isset($row['manage_status'])) {
+    //         $row['manage_status_txt'] = ManageStatusEnum::getValue($row['manage_status']);
+    //     }
+    //     return (new HashIdsSup())->encode($row);
+    // }
 
     /**
      * 管理员列表

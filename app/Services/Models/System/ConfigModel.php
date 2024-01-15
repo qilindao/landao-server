@@ -6,7 +6,7 @@ namespace App\Services\Models\System;
 use App\Services\Casts\System\ConfigContentCast;
 use App\Services\Casts\System\ConfigRuleCast;
 use App\Services\Casts\System\ConfigValueCast;
-use Illuminate\Database\Eloquent\Model;
+use App\Services\Models\BaseModel;
 
 /**
  * 请说明具体哪块业务的 Eloquent ORM
@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Model;
  * Class ConfigModel
  * @package App\Services\Models\System;
  */
-class ConfigModel extends Model
+class ConfigModel extends BaseModel
 {
     /**
      * 表名

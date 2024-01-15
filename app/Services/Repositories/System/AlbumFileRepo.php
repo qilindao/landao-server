@@ -7,7 +7,6 @@ use App\Services\Enums\System\AlbumFileTypeEnum;
 use Illuminate\Support\Facades\Storage;
 use JoyceZ\LaravelLib\Helpers\ResultHelper;
 use JoyceZ\LaravelLib\Repositories\BaseRepository;
-use App\Services\Repositories\System\Interfaces\IAlbumFile;
 use App\Services\Models\System\AlbumFileModel;
 
 /**
@@ -18,7 +17,7 @@ use App\Services\Models\System\AlbumFileModel;
  * Class AlbumFileRepo
  * @package App\Services\Repositories\System;
  */
-class AlbumFileRepo extends BaseRepository implements IAlbumFile
+class AlbumFileRepo extends BaseRepository
 {
 
     /**
@@ -33,6 +32,8 @@ class AlbumFileRepo extends BaseRepository implements IAlbumFile
      * 上传文件到本地
      * @param $request
      * @return array
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     * @throws \JoyceZ\LaravelLib\Exceptions\RepositoryException
      */
     public function doLocalUpload($request): array
     {

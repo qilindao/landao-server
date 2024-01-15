@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Services\Models\System;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Services\Models\BaseModel;
 
 /**
  * 行政区域 Eloquent ORM
@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * Class RegionModel
  * @package App\Services\Models\System;
  */
-class RegionModel extends Model
+class RegionModel extends BaseModel
 {
     /**
      * 表名

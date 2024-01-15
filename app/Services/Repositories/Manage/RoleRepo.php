@@ -4,9 +4,10 @@ declare (strict_types=1);
 namespace App\Services\Repositories\Manage;
 
 
+use App\Services\Models\Manage\ManageModel;
+use App\Services\Models\Manage\RoleHasMenuModel;
 use App\Services\Models\Manage\RoleModel;
-use App\Services\Repositories\Manage\Interfaces\IRole;
-use App\Support\HashIdsSup;
+use App\Services\Repositories\System\MenuRepo;
 use Illuminate\Support\Arr;
 use JoyceZ\LaravelLib\Repositories\BaseRepository;
 
@@ -16,21 +17,11 @@ use JoyceZ\LaravelLib\Repositories\BaseRepository;
  * Class RoleRepo
  * @package App\Services\Repositories\Manage
  */
-class RoleRepo extends BaseRepository implements IRole
+class RoleRepo extends BaseRepository
 {
     public function model()
     {
         return RoleModel::class;
-    }
-
-    /**
-     * 解析菜单数据
-     * @param array $row
-     * @return array
-     */
-    public function parseDataRow(array $row): array
-    {
-        return (new HashIdsSup())->encode($row);
     }
 
     /**
@@ -55,6 +46,37 @@ class RoleRepo extends BaseRepository implements IRole
             $roles['data'][$key]['menus'] = Arr::flatten($role['menus']);
         }
         return $roles;
+    }
+
+    /**
+     * 根据角色ID，获取相应的菜单ids
+     * @param $roleIds
+     * @return array
+     */
+    public function getMenuIdsByRoleIds($roleIds): array
+    {
+        $menuIdsList = RoleHasMenuModel::whereIn('role_id', $roleIds)->pluck('menu_id')->toArray();
+        return array_unique($menuIdsList);
+    }
+
+    /**
+     * 根据角儿ids，获取菜单
+     * @param ManageModel $user
+     * @return array
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     */
+    public function getRoleMenuByRoleIds(ManageModel $user): array
+    {
+        $roleIds = [];
+        foreach ($user->roles as $item) {
+            $roleIds[] = $item['role_id'];
+        }
+        $menuIds = [];
+        //获取角色关联权限菜单ids
+        if (!(boolean)$user->is_super && count($roleIds) > 0) {
+            $menuIds = $this->getMenuIdsByRoleIds($roleIds);
+        }
+        return $this->app->make(MenuRepo::class)->generatePermission($menuIds);
     }
 
 

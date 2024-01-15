@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace App\Services\Repositories\System;
 
 use JoyceZ\LaravelLib\Repositories\BaseRepository;
-use App\Services\Repositories\System\Interfaces\IAlbum;
 use App\Services\Models\System\AlbumModel;
 
 /**
@@ -15,7 +14,7 @@ use App\Services\Models\System\AlbumModel;
  * Class AlbumRepo
  * @package App\Services\Repositories\System;
  */
-class AlbumRepo extends BaseRepository implements IAlbum
+class AlbumRepo extends BaseRepository
 {
 
     /**

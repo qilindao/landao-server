@@ -28,7 +28,9 @@ class Config extends ApiController
      * 添加配置项
      * @param ConfigRequest $request
      * @param ConfigRepo $configRepo
-     * @return array|\Illuminate\Http\JsonResponse
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     * @throws \JoyceZ\LaravelLib\Exceptions\RepositoryException
      */
     public function store(ConfigRequest $request, ConfigRepo $configRepo)
     {
@@ -59,7 +61,9 @@ class Config extends ApiController
      * @param Request $request
      * @param ConfigRepo $configRepo
      * @param RegionRepo $regionRepo
-     * @return array|\Illuminate\Http\JsonResponse
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     * @throws \JoyceZ\LaravelLib\Exceptions\RepositoryException
      */
     public function update(Request $request, ConfigRepo $configRepo, RegionRepo $regionRepo)
     {
