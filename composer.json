@@ -6,12 +6,12 @@
     "license": "MIT",
     "require": {
         "php": "^7.3",
+        "genealabs/laravel-model-caching": "^0.11.7",
         "guzzlehttp/guzzle": "^7.0.1",
-        "joycezhang/laravellib": "^2.3",
+        "joycezhang/laravellib": "2.3.4",
         "laravel/framework": "^8.83",
         "laravel/tinker": "^2.5",
-        "tymon/jwt-auth": "^1.0",
-        "vinkla/hashids": "^9.1"
+        "tymon/jwt-auth": "^1.0"
     },
     "require-dev": {
         "facade/ignition": "^2.5",

@@ -39,7 +39,7 @@ return [
     |
     */
 
-    'debug' => (bool) env('APP_DEBUG', false),
+    'debug' => (bool)env('APP_DEBUG', false),
 
     /*
     |--------------------------------------------------------------------------
@@ -174,9 +174,7 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
-        //绑定
-        App\Providers\RepositoryServiceProvider::class
-
+//        Eloquence\EloquenceServiceProvider::class//数据库模型蛇形命名自动转换驼峰命名
     ],
 
     /*
