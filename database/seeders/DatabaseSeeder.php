@@ -13,12 +13,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        // \App\Models\User::factory(10)->create();
         $this->call([
             SysManageSeeder::class,
-            SysManageMenuSeeder::class,
             SysRegionTableSeeder::class,
-            SysConfigSeeder::class
+//            SysConfigSeeder::class
         ]);
     }
 }
