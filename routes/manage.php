@@ -41,6 +41,7 @@ Route::group([
             $router->put('/role/update/{id}', 'Role@update')->name('role.update');//更新菜单
             $router->delete('/role/delete/{id}', 'Role@destroy')->name('role.destroy');//删除菜单
             $router->post('/role/modify/{id}', 'Role@modifyFiled')->where('id', '[0-9]+')->name('role.modifyFiled');//快捷修改
+            $router->post('/role/update/auth/{id}', 'Role@updateRoleAuth')->where('id', '[0-9]+')->name('role.updateRoleAuth');//更新权限
             //部门
             $router->get('/dept', 'Dept@index')->name('dept.index');//用户列表
             $router->get('/dept/read/{id}', 'Dept@read')->name('dept.read');//详情

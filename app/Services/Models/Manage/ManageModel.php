@@ -23,7 +23,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
  */
 class ManageModel extends Authenticatable implements JWTSubject
 {
-    use Notifiable,EncryptTableDbAttribute;
+    use Notifiable, EncryptTableDbAttribute;
 
     /**
      * 表名
@@ -100,13 +100,14 @@ class ManageModel extends Authenticatable implements JWTSubject
         'last_login_ip' => Ip4ConverterIntCast::class,//最后登录ip地址
         'reg_date' => 'datetime:Y-m-d H:i:s',
         'updated_at' => 'datetime:Y-m-d H:i:s',
+        'is_super' => 'boolean'
     ];
 
     /**
      * 创建虚拟字段
      * @var array
      */
-    protected $appends=[
+    protected $appends = [
         'manage_status_txt',
         'is_super_txt',
     ];
@@ -116,7 +117,7 @@ class ManageModel extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $encryptTable = [
-        'phone','pwd_salt'
+        'phone', 'pwd_salt'
     ];
 
     protected function serializeDate(DateTimeInterface $date)
@@ -141,9 +142,6 @@ class ManageModel extends Authenticatable implements JWTSubject
     {
         return $this->attributes['refresh_time'] > 0 ? date('Y-m-d H:i:s', $this->attributes['refresh_time']) : '-';
     }
-
-
-
 
 
     /**
