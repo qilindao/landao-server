@@ -16,7 +16,7 @@ class RoleRequest extends BaseRequest
         return [
             'role_name' => 'required|max:150',
             'role_desc' => 'max:250',
-            'menus' => 'required|array|min:1'
+//            'menus' => 'required|array|min:1'
         ];
     }
 
@@ -25,6 +25,12 @@ class RoleRequest extends BaseRequest
         return [
             'role_name' => 'required|max:150',
             'role_desc' => 'max:250',
+//            'menus' => 'required|array|min:1'
+        ];
+    }
+
+    public function getRulesByUpdateRoleAuth(){
+        return [
             'menus' => 'required|array|min:1'
         ];
     }
