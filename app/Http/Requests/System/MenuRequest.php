@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Requests\Manage;
+
+namespace App\Http\Requests\System;
+
 
 use App\Services\Enums\System\MenuTypeEnum;
 use Illuminate\Validation\Rule;
@@ -9,7 +11,7 @@ use JoyceZ\LaravelLib\Validation\BaseRequest;
 /**
  * 权限菜单验证
  * Class MenuRequest
- * @package App\Http\Requests\Manage
+ * @package App\Http\Requests\System
  */
 class MenuRequest extends BaseRequest
 {
