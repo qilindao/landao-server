@@ -65,7 +65,7 @@ class Dept extends ApiController
         $params = $request->all();
         $data = [
             'dept_name' => FiltersHelper::filterXSS(trim($params['dept_name'])),
-            'dept_desc' => FiltersHelper::filterXSS(trim($params['dept_desc'])),
+            'dept_desc' => trim($params['dept_desc']) ? FiltersHelper::filterXSS(trim($params['dept_desc'])) : '',
             'dept_order' => intval($params['dept_order']),
             'parent_id' => (int)$params['parent_id']
         ];
@@ -98,7 +98,7 @@ class Dept extends ApiController
             return $this->badSuccessRequest('部门信息不存在');
         }
         $dept->dept_name = FiltersHelper::filterXSS(trim($params['dept_name']));
-        $dept->dept_desc = FiltersHelper::filterXSS(trim($params['dept_desc']));
+        $dept->dept_desc = trim($params['dept_desc']) ? FiltersHelper::filterXSS(trim($params['dept_desc'])) : '';
         $dept->dept_order = intval($params['dept_order']);
         $dept->parent_id = (int)$params['parent_id'];
 

@@ -28,14 +28,13 @@ class Role extends ApiController
     {
         $params = $request->all();
         $ret = $roleRepo->getList($params, $params['order'] ?? 'created_at', $params['sort'] ?? 'desc');
-        $list = $roleRepo->parseDataRows($ret['data']);
         return $this->success([
             'pagination' => [
                 'total' => $ret['total'],
                 'page_size' => $ret['per_page'],
                 'current_page' => $ret['current_page'],
             ],
-            'list' => $list
+            'list' => $ret['data']
         ]);
     }
 
@@ -91,11 +90,11 @@ class Role extends ApiController
         try {
             $role = $roleRepo->create($data);
             if ($role) {
-                if ($params['menus']) {
-                    //对数据进行解密
-                    $ids = $params['menus'];
-                    $role->menus()->sync(array_filter(array_unique($ids)));
-                }
+//                if ($params['menus']) {
+//                    //对数据进行解密
+//                    $ids = $params['menus'];
+//                    $role->menus()->sync(array_filter(array_unique($ids)));
+//                }
                 $roleRepo->commit();
                 return $this->successRequest('新增成功');
             }
@@ -127,11 +126,11 @@ class Role extends ApiController
         $roleRepo->transaction();
         try {
             if ($role->save()) {
-                if ($params['menus']) {
-                    //对数据进行解密
-                    $ids = $params['menus'];
-                    $role->menus()->sync(array_filter(array_unique($ids)));
-                }
+//                if ($params['menus']) {
+//                    //对数据进行解密
+//                    $ids = $params['menus'];
+//                    $role->menus()->sync(array_filter(array_unique($ids)));
+//                }
                 $roleRepo->commit();
                 return $this->successRequest('更新成功');
             }
@@ -164,6 +163,34 @@ class Role extends ApiController
             }
             $roleRepo->rollBack();
             return $this->badSuccessRequest('删除失败');
+        } catch (QueryException $exception) {
+            $roleRepo->rollBack();
+            return $this->badSuccessRequest($exception->getMessage());
+        }
+    }
+
+    /**
+     * 更新权限
+     * @param int $roleId
+     * @param RoleRequest $request
+     * @param RoleRepo $roleRepo
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateRoleAuth(int $roleId, RoleRequest $request, RoleRepo $roleRepo)
+    {
+        if (intval($roleId) <= 0) {
+            return $this->badSuccessRequest('缺少角色信息');
+        }
+        $role = $roleRepo->getByPkId($roleId);
+        if (!$role) {
+            return $this->badSuccessRequest('角色不存在');
+        }
+        $roleRepo->transaction();
+        $menus = $request->post('menus', []);
+        try {
+            $role->menus()->sync(array_filter(array_unique($menus)));
+            $roleRepo->commit();
+            return $this->successRequest('更新成功');
         } catch (QueryException $exception) {
             $roleRepo->rollBack();
             return $this->badSuccessRequest($exception->getMessage());

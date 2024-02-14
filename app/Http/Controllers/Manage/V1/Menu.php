@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Manage\V1;
 
 
 use App\Http\Controllers\ApiController;
-use App\Http\Requests\Manage\MenuRequest;
+use App\Http\Requests\System\MenuRequest;
 use App\Services\Enums\System\MenuTypeEnum;
 use App\Services\Repositories\System\MenuRepo;
 use Illuminate\Database\QueryException;
